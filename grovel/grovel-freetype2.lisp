@@ -25,35 +25,12 @@
 (ctype ft-ptrdist "FT_PtrDist")
 (ctype ft-string "FT_String")
 (ctype ft-tag "FT_Tag")
-(ctype ft-error "FT_Error")
+;(ctype ft-error "FT_Error")
 (ctype ft-fixed "FT_Fixed")
-(ctype ft-pointer "FT_Pointer")
 (ctype ft-pos "FT_Pos")
-
-(cstruct ft-vector "FT_Vector"
-         (x "x" :type ft-pos)
-         (y "y" :type ft-pos))
-
-(cstruct ft-bbox "FT_BBox"
-         (xmin "xMin" :type ft-pos)
-         (ymin "yMin" :type ft-pos)
-         (xmax "xMax" :type ft-pos)
-         (ymax "yMax" :type ft-pos))
-
-(cstruct ft-matrix "FT_Matrix"
-         (xx "xx" :type ft-fixed)
-         (xy "xy" :type ft-fixed)
-         (yx "yx" :type ft-fixed)
-         (yy "yy" :type ft-fixed))
-
 (ctype ft-fword "FT_FWord")
 (ctype ft-ufword "FT_UFWord")
 (ctype ft-f2dot14 "FT_F2Dot14")
-
-(cstruct ft-unitvector "FT_UnitVector"
-         (x "x" :type ft-f2dot14)
-         (y "y" :type ft-f2dot14))
-
 (ctype ft-f26dot6 "FT_F26Dot6")
 
 (cenum ft-pixel-mode
@@ -66,16 +43,6 @@
        ((:lcd-v "FT_PIXEL_MODE_LCD_V"))
        ((:max "FT_PIXEL_MODE_MAX")))
 
-(cstruct ft-bitmap "FT_Bitmap"
-         (rows "rows" :type :int)
-         (width "width" :type :int)
-         (pitch "pitch" :type :int)
-         (buffer "buffer" :type :pointer)
-         (num-grays "num_grays" :type :short)
-         (pixel-mode "pixel_mode" :type :char)
-         (palette-mode "palette_mode" :type :char)
-         (palette "palette" :type :pointer))
-
 (cenum ft-glyph-format
        ((:none "FT_GLYPH_FORMAT_NONE"))
        ((:composite "FT_GLYPH_FORMAT_COMPOSITE"))
@@ -83,87 +50,7 @@
        ((:outline "FT_GLYPH_FORMAT_OUTLINE"))
        ((:plotter "FT_GLYPH_FORMAT_PLOTTER")))
 
-(cstruct ft-data "FT_Data"
-         (pointer "pointer" :type :pointer)
-         (length "length" :type ft-int))
-
-(ctype ft-generic-finalizer "FT_Generic_Finalizer")
-
-(cstruct ft-generic "FT_Generic"
-         (data "data" :type :pointer)
-         (finalizer "finalizer" :type ft-generic-finalizer))
-
- ;; System Interface
-(ctype ft-memory "FT_Memory")
-(ctype ft-alloc-func "FT_Alloc_Func")
-(ctype ft-free-func "FT_Free_Func")
-(ctype ft-realloc-func "FT_Realloc_Func")
-
-(cstruct ft-memoryrec "struct FT_MemoryRec_"
-         (user "user" :type :pointer)
-         (alloc "alloc" :type ft-alloc-func)
-         (free "free" :type ft-free-func)
-         (realloc "realloc" :type ft-realloc-func))
-
-(ctype ft-stream "FT_Stream")
-
-(cstruct ft-streamdesc "FT_StreamDesc"
-         (value "value" :type :long)
-         (pointer "pointer" :type :pointer))
-
-(ctype ft-stream-iofunc "FT_Stream_IoFunc")
-(ctype ft-stream-closefunc "FT_Stream_CloseFunc")
-
-(cstruct ft-streamrec "FT_StreamRec"
-         (base "base" :type :pointer)
-         (size "size" :type :unsigned-long)
-         (pos "pos" :type :unsigned-long)
-
-         (descriptor "descriptor" :type ft-streamdesc)
-         (pathname "pathname" :type ft-streamdesc)
-         (read "read" :type ft-stream-iofunc)
-         (close "close" :type ft-stream-closefunc)
-
-         (memory "memory" :type ft-memory)
-         (cursor "cursor" :type :pointer)
-         (limit "limit" :type :pointer))
-
- ;; List Processing
-(ctype ft-list "FT_List")
-(ctype ft-listnode "FT_ListNode")
-
-(cstruct ft-listrec "FT_ListRec"
-         (head "head" :type ft-listnode)
-         (tail "tail" :type ft-listnode))
-
-(cstruct ft-listnoderec "FT_ListNodeRec"
-         (prev "prev" :type ft-listnode)
-         (next "next" :type ft-listnode)
-         (data "data" :type :pointer))
-
-(ctype ft-list-iterator "FT_List_Iterator")
-(ctype ft-list-destructor "FT_List_Destructor")
-
- ;; Outline Processing
-
-(cstruct ft-outline "FT_Outline"
-         (n-contours "n_contours" :type :short)
-         (n-points "n_points" :type :short)
-
-         (points "points" :type :pointer)
-         (tags "tags" :type :pointer)
-         (contours "contours" :type :pointer)
-
-         (flags "flags" :type :int))
-
-
  ;; Basic API
-(ctype ft-library "FT_Library")
-(ctype ft-face "FT_Face")
-(ctype ft-size "FT_Size")
-(ctype ft-glyphslot "FT_GlyphSlot")
-(ctype ft-charmap "FT_CharMap")
-
 (cenum ft-encoding
        ((:none "FT_ENCODING_NONE"))
        ((:ms-symbol "FT_ENCODING_MS_SYMBOL"))
@@ -180,148 +67,6 @@
        ((:old-latin-2 "FT_ENCODING_OLD_LATIN_2"))
        ((:apple-roman "FT_ENCODING_APPLE_ROMAN")))
 
-(cstruct ft-glyph-metrics "FT_Glyph_Metrics"
-         (width "width" :type ft-pos)
-         (height "height" :type ft-pos)
-         (hori-bearing-x "horiBearingX" :type ft-pos)
-         (hori-bearing-y "horiBearingY" :type ft-pos)
-         (hori-advance "horiAdvance" :type ft-pos)
-         (vert-bearing-x "vertBearingX" :type ft-pos)
-         (vert-bearing-y "vertBearingY" :type ft-pos)
-         (vert-advance "vertAdvance" :type ft-pos))
-
-(cstruct ft-bitmap-size "FT_Bitmap_Size"
-         (height "height" :type ft-short)
-         (width "width" :type ft-short)
-         (size "size" :type ft-pos)
-         (x-ppem "x_ppem" :type ft-pos)
-         (y-ppem "y_ppem" :type ft-pos))
-
-(ctype ft-module "FT_Module")
-(ctype ft-driver "FT_Driver")
-(ctype ft-renderer "FT_Renderer")
-
-(cstruct ft-charmaprec "FT_CharMapRec"
-         (face "face" :type ft-face)
-         (encoding "encoding" :type ft-encoding)
-         (platform-id "platform_id" :type ft-ushort)
-         (encoding-id "encoding_id" :type ft-ushort))
-
-(ctype ft-face-internal "FT_Face_Internal")
-
-(cstruct ft-facerec "FT_FaceRec"
-         (num-faces "num_faces" :type ft-long)
-         (face-index "face_index" :type ft-long)
-
-         (face-flags "face_flags" :type ft-long)
-         (style-flags "style_flags" :type ft-long)
-
-         (num-glyphs "num_glyphs" :type ft-long)
-
-         (family-name "family_name" :type :string)
-         (style-name "style_name" :type :string)
-
-         (num-fixed-sizes "num_fixed_sizes" :type ft-int)
-         (available-sizes "available_sizes" :type :pointer)
-
-         (num-charmaps "num_charmaps" :type ft-int)
-         (charmaps "charmaps" :type :pointer)
-
-         (generic "generic" :type ft-generic)
-
-         (bbox "bbox" :type ft-bbox)
-
-         (units-per-em "units_per_EM" :type ft-ushort)
-         (ascender "ascender" :type ft-short)
-         (descender "descender" :type ft-short)
-         (height "height" :type ft-short)
-
-         (underline-position "underline_position" :type ft-short)
-         (underline-thickness "underline_thickness" :type ft-short)
-
-         (glyph "glyph" :type ft-glyphslot)
-         (size "size" :type ft-size)
-         (charmap "charmap" :type ft-charmap)
-
-         (driver "driver" :type ft-driver)
-         (memory "memory" :type ft-memory)
-         (stream "stream" :type ft-stream)
-
-         (sizes-list "sizes_list" :type ft-listrec)
-
-         (autohint "autohint" :type ft-generic)
-         (extensions "extensions" :type :pointer)
-
-         (internal "internal" :type ft-face-internal))
-
-(ctype ft-size-internal "FT_Size_Internal")
-
-(cstruct ft-size-metrics "FT_Size_Metrics"
-         (x-ppem "x_ppem" :type ft-ushort)
-         (y-ppem "y_ppem" :type ft-ushort)
-         (x-scale "x_scale" :type ft-fixed)
-         (y-scale "y_scale" :type ft-fixed)
-         (ascender "ascender" :type ft-pos)
-         (descender "descender" :type ft-pos)
-         (height "height" :type ft-pos)
-         (max-advance "max_advance" :type ft-pos))
-
-(cstruct ft-sizerec "FT_SizeRec"
-         (face "face" :type ft-face)
-         (generic "generic" :type ft-generic)
-         (metrics "metrics" :type ft-size-metrics)
-         (internal "internal" :type ft-size-internal))
-
-(ctype ft-subglyph "FT_SubGlyph")
-(ctype ft-slot-internal "FT_Slot_Internal")
-
-(cstruct ft-glyphslotrec "FT_GlyphSlotRec"
-         (library "library" :type ft-library)
-         (face "face" :type ft-face)
-         (next "next" :type ft-glyphslot)
-         (reserved "reserved" :type ft-uint)
-         (generic "generic" :type ft-generic)
-
-         (metrics "metrics" :type ft-glyph-metrics)
-         (linear-hori-advance "linearHoriAdvance" :type ft-fixed)
-         (linear-vert-advance "linearVertAdvance" :type ft-fixed)
-         (advance "advance" :type ft-vector)
-
-         (format "format" :type ft-glyph-format)
-
-         (bitmap "bitmap" :type ft-bitmap)
-         (bitmap-left "bitmap_left" :type ft-int)
-         (bitmap-top "bitmap_top" :type ft-int)
-
-         (outline "outline" :type ft-outline)
-
-         (num-subglyphs "num_subglyphs" :type ft-uint)
-         (subglyphs "subglyphs" :type ft-subglyph)
-
-         (control-data "control_data" :type :pointer)
-         (control-len "control_len" :type :long)
-
-         (lsb-delta "lsb_delta" :type ft-pos)
-         (rsb-delta "rsb_delta" :type ft-pos)
-
-         (other "other" :type :pointer)
-
-         (internal "internal" :type ft-face-internal))
-
-(cstruct ft-parameter "FT_Parameter"
-         (tag "tag" :type ft-ulong)
-         (data "data" :type ft-pointer))
-
-(cstruct ft-open-args "FT_Open_Args"
-         (flags "flags" :type ft-uint)
-         (memory-base "memory_base" :type :pointer)
-         (memory-size "memory_size" :type ft-long)
-         (pathname "pathname" :type :pointer)
-         (stream "stream" :type ft-stream)
-         (driver "driver" :type ft-module)
-         (num-params "num_params" :type ft-int)
-         (params "params" :type ft-parameter))
-
 (cenum ft-size-request-type
        ((:nominal "FT_SIZE_REQUEST_TYPE_NOMINAL"))
        ((:real-dim "FT_SIZE_REQUEST_TYPE_REAL_DIM"))
@@ -329,15 +74,6 @@
        ((:cell "FT_SIZE_REQUEST_TYPE_CELL"))
        ((:scales "FT_SIZE_REQUEST_TYPE_SCALES"))
        ((:max "FT_SIZE_REQUEST_TYPE_MAX")))
-
-(cstruct ft-size-requestrec "FT_Size_RequestRec"
-         (type "type" :type ft-size-request-type)
-         (width "width" :type ft-long)
-         (height "height" :type ft-long)
-         (hori-resolution "horiResolution" :type ft-uint)
-         (vert-resolution "vertResolution" :type ft-uint))
-
-(ctype ft-size-request "FT_Size_Request")
 
 (cenum ft-render-mode
        ((:normal "FT_RENDER_MODE_NORMAL"))
@@ -352,4 +88,94 @@
        ((:unfitted "FT_KERNING_UNFITTED"))
        ((:unscaled "FT_KERNING_UNSCALED")))
 
+ ;; Errors
 
+(cenum ft-error
+       ((:ok "FT_Err_Ok"))
+       ((:cannot-open-resource "FT_Err_Cannot_Open_Resource"))
+       ((:unknown-file-format "FT_Err_Unknown_File_Format"))
+       ((:invalid-file-format "FT_Err_Invalid_File_Format"))
+       ((:invalid-version "FT_Err_Invalid_Version"))
+       ((:lower-module-version "FT_Err_Lower_Module_Version"))
+       ((:invalid-argument "FT_Err_Invalid_Argument"))
+       ((:unimplemented-feature "FT_Err_Unimplemented_Feature"))
+       ((:invalid-table "FT_Err_Invalid_Table"))
+       ((:invalid-offset "FT_Err_Invalid_Offset"))
+       ((:array-too-large "FT_Err_Array_Too_Large"))
+       ((:invalid-glyph-index "FT_Err_Invalid_Glyph_Index"))
+       ((:invalid-character-code "FT_Err_Invalid_Character_Code"))
+       ((:invalid-glyph-format "FT_Err_Invalid_Glyph_Format"))
+       ((:cannot-render-glyph "FT_Err_Cannot_Render_Glyph"))
+       ((:invalid-outline "FT_Err_Invalid_Outline"))
+       ((:invalid-composite "FT_Err_Invalid_Composite"))
+       ((:too-many-hints "FT_Err_Too_Many_Hints"))
+       ((:invalid-pixel-size "FT_Err_Invalid_Pixel_Size"))
+       ((:invalid-handle "FT_Err_Invalid_Handle"))
+       ((:invalid-library-handle "FT_Err_Invalid_Library_Handle"))
+       ((:invalid-driver-handle "FT_Err_Invalid_Driver_Handle"))
+       ((:invalid-face-handle "FT_Err_Invalid_Face_Handle"))
+       ((:invalid-size-handle "FT_Err_Invalid_Size_Handle"))
+       ((:invalid-slot-handle "FT_Err_Invalid_Slot_Handle"))
+       ((:invalid-charmap-handle "FT_Err_Invalid_CharMap_Handle"))
+       ((:invalid-cache-handle "FT_Err_Invalid_Cache_Handle"))
+       ((:invalid-stream-handle "FT_Err_Invalid_Stream_Handle"))
+       ((:too-many-drivers "FT_Err_Too_Many_Drivers"))
+       ((:too-many-extensions "FT_Err_Too_Many_Extensions"))
+       ((:out-of-memory "FT_Err_Out_Of_Memory"))
+       ((:unlisted-object "FT_Err_Unlisted_Object"))
+       ((:cannot-open-stream "FT_Err_Cannot_Open_Stream"))
+       ((:invalid-stream-seek "FT_Err_Invalid_Stream_Seek"))
+       ((:invalid-stream-skip "FT_Err_Invalid_Stream_Skip"))
+       ((:invalid-stream-read "FT_Err_Invalid_Stream_Read"))
+       ((:invalid-stream-operation "FT_Err_Invalid_Stream_Operation"))
+       ((:invalid-frame-operation "FT_Err_Invalid_Frame_Operation"))
+       ((:nested-frame-access "FT_Err_Nested_Frame_Access"))
+       ((:invalid-frame-read "FT_Err_Invalid_Frame_Read"))
+       ((:raster-uninitialized "FT_Err_Raster_Uninitialized"))
+       ((:raster-corrupted "FT_Err_Raster_Corrupted"))
+       ((:raster-overflow "FT_Err_Raster_Overflow"))
+       ((:raster-negative-height "FT_Err_Raster_Negative_Height"))
+       ((:too-many-caches "FT_Err_Too_Many_Caches"))
+       ((:invalid-opcode "FT_Err_Invalid_Opcode"))
+       ((:too-few-arguments "FT_Err_Too_Few_Arguments"))
+       ((:stack-overflow "FT_Err_Stack_Overflow"))
+       ((:code-overflow "FT_Err_Code_Overflow"))
+       ((:bad-argument "FT_Err_Bad_Argument"))
+       ((:divide-by-zero "FT_Err_Divide_By_Zero"))
+       ((:invalid-reference "FT_Err_Invalid_Reference"))
+       ((:debug-opcode "FT_Err_Debug_OpCode"))
+       ((:endf-in-exec-stream "FT_Err_ENDF_In_Exec_Stream"))
+       ((:nested-defs "FT_Err_Nested_DEFS"))
+       ((:invalid-coderange "FT_Err_Invalid_CodeRange"))
+       ((:execution-too-long "FT_Err_Execution_Too_Long"))
+       ((:too-many-function-defs "FT_Err_Too_Many_Function_Defs"))
+       ((:too-many-instruction-defs "FT_Err_Too_Many_Instruction_Defs"))
+       ((:table-missing "FT_Err_Table_Missing"))
+       ((:horiz-header-missing "FT_Err_Horiz_Header_Missing"))
+       ((:locations-missing "FT_Err_Locations_Missing"))
+       ((:name-table-missing "FT_Err_Name_Table_Missing"))
+       ((:cmap-table-missing "FT_Err_CMap_Table_Missing"))
+       ((:hmtx-table-missing "FT_Err_Hmtx_Table_Missing"))
+       ((:post-table-missing "FT_Err_Post_Table_Missing"))
+       ((:invalid-horiz-metrics "FT_Err_Invalid_Horiz_Metrics"))
+       ((:invalid-charmap-format "FT_Err_Invalid_CharMap_Format"))
+       ((:invalid-ppem "FT_Err_Invalid_PPem"))
+       ((:invalid-vert-metrics "FT_Err_Invalid_Vert_Metrics"))
+       ((:could-not-find-context "FT_Err_Could_Not_Find_Context"))
+       ((:invalid-post-table-format "FT_Err_Invalid_Post_Table_Format"))
+       ((:invalid-post-table "FT_Err_Invalid_Post_Table"))
+       ((:syntax-error "FT_Err_Syntax_Error"))
+       ((:stack-underflow "FT_Err_Stack_Underflow"))
+       ((:ignore "FT_Err_Ignore"))
+       ((:no-unicode-glyph-name "FT_Err_No_Unicode_Glyph_Name"))
+       ((:missing-startfont-field "FT_Err_Missing_Startfont_Field"))
+       ((:missing-font-field "FT_Err_Missing_Font_Field"))
+       ((:missing-size-field "FT_Err_Missing_Size_Field"))
+       ((:missing-fontboundingbox-field "FT_Err_Missing_Fontboundingbox_Field"))
+       ((:missing-chars-field "FT_Err_Missing_Chars_Field"))
+       ((:missing-startchar-field "FT_Err_Missing_Startchar_Field"))
+       ((:missing-encoding-field "FT_Err_Missing_Encoding_Field"))
+       ((:missing-bbx-field "FT_Err_Missing_Bbx_Field"))
+       ((:bbx-too-big "FT_Err_Bbx_Too_Big"))
+       ((:corrupted-font-header "FT_Err_Corrupted_Font_Header"))
+       ((:corrupted-font-glyphs "FT_Err_Corrupted_Font_Glyphs")))
