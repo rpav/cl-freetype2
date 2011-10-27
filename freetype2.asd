@@ -13,8 +13,12 @@
                         :components
                         ((:static-file "grovel-freetype.h")
                          (cffi-grovel:grovel-file "grovel-freetype2")))
-               (:file "freetype2-cffi")
-               (:file "freetype2")))
+               (:file "cffi-cwrap")
+               (:file "cffi-defs")
+               (:file "ft2-lib")
+               (:file "ft2-init")
+               (:file "ft2-basic-types")
+               (:file "ft2-face")))
 
 ;; Making an :around COMPILE-OP GROVEL-FILE is sortof the right way to do
 ;; this, if it didn't override everything else anyway.  Fix.

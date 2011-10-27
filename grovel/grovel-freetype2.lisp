@@ -7,6 +7,9 @@
 (constant (+version-minor+ "FREETYPE_MINOR"))
 (constant (+version-patch+ "FREETYPE_PATCH"))
 
+ ;; C types
+(ctype size_t "size_t")
+
  ;; Basic Types
 (ctype ft-byte "FT_Byte")
 (ctype ft-bytes "FT_Bytes")
