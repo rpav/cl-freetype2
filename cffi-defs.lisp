@@ -1,5 +1,35 @@
 (in-package :freetype2)
 
+ ;; Bit fields
+
+(defbitfield (ft-load-flags ft-int32)
+  (:default #x0)
+  :no-scale :no-hinting :render :no-bitmap :vertical-layout :force-autohint
+  :crop-bitmap :pedantic
+
+  (:ignore-global-advance-width #x200)
+  :no-recurse :ignore-transform
+
+  :monochrome :linear-design
+
+  (:no-autohint #x8000))
+
+(defbitfield (ft-face-flags ft-long)
+  (:scalable #x1)
+  :fixed-sizes :fixed-width :sfnt
+  :horizontal :vertical :kerning
+  :fast-glyphs :multiple-masters
+  :glyph-names :external-stream
+  :hinter :cid-keyed :tricky)
+
+(defbitfield (ft-style-flags ft-long)
+  (:italic #x1) :bold)
+
+ ;; Enums
+
+(defcenum (ft-pixel-mode :char)
+  :none :mono :gray :gray2 :gray4 :lcd :lcd-v)
+
  ;; Basic Types
 
 (defcwraptype ft-pointer :pointer)
@@ -30,7 +60,7 @@
      (pitch :int)
      (buffer :pointer)
      (num-grays :short)
-     (pixel-mode :char)
+     (pixel-mode ft-pixel-mode)
      (palette-mode :char)
      (palette :pointer)))
 
@@ -118,6 +148,10 @@
 (defcwraptype ft-slot-internal :pointer)
 (defcwraptype ft-size-request :pointer)
 
+(cffi::canonicalize-foreign-type :string)
+
+(typep (cffi::parse-type 'ft-glyph-metrics) 'wrapped-cffitype)
+
 (defcwrap ft-glyph-metrics
     ((width ft-pos)
      (height ft-pos)
@@ -145,8 +179,8 @@
     ((num-faces ft-long)
      (face-index ft-long)
      
-     (face-flags ft-long)
-     (style-flags ft-long)
+     (face-flags ft-face-flags)
+     (style-flags ft-style-flags)
      
      (num-glyphs ft-long)
      
@@ -240,11 +274,3 @@
      (height ft-long)
      (hori-resolution ft-uint)
      (vert-resolution ft-uint)))
-
- ;; Bit fields
-
-(defbitfield ft-load-flags
-  (:default 0)
-  :no-scale :no-hinting :render :no-bitmap :vertical-layout :force-autohint
-  :crop-bitmap :pedantic :ignore-global-advance-width :no-recurse
-  :ignore-transform :monochrome :linear-design :no-autohint)

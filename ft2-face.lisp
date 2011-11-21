@@ -46,10 +46,11 @@
   (render-mode ft-render-mode))
 
 (defmethod print-object ((object ft-face) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "\"~A ~A\""
-            (ft-face-family-name object)
-            (ft-face-style-name object))))
+  (print-unreadable-object (object stream :type t :identity nil)
+    (format stream "\"~A ~A\" {#x~8,'0X}"
+                (ft-face-family-name object)
+                (ft-face-style-name object)
+                (pointer-address (fw-ptr object)))))
 
 (defun new-face (pathname &optional (index 0) (library *library*))
   (make-wrapper (face &face ft-face)

@@ -13,16 +13,14 @@
 
 (declaim (inline fw-ptr))
 (defstruct (foreign-wrapper (:conc-name #:fw-))
-  (ptr (cffi-sys:null-pointer) :type cffi-sys:foreign-pointer)
-  (cffitype :pointer))
+  (ptr (cffi-sys:null-pointer) :type cffi-sys:foreign-pointer))
 
 #+-(declaim (inline w* w[] p* &))
 (defun w* (wrapper &optional (type-cast :pointer))
   (mem-ref (fw-ptr wrapper) type-cast))
 
-(defun w[] (wrapper index &optional type-cast)
-  (let* ((type (or type-cast (fw-cffitype wrapper)))
-         (size (foreign-type-size type)))
+(defun w[] (wrapper index type-cast)
+  (let* ((size (foreign-type-size type-cast)))
     (inc-pointer (fw-ptr wrapper) (* size index))))
 
 (defun p* (ptr &optional (type-cast :pointer))
@@ -33,6 +31,10 @@
 (defmethod print-object ((object foreign-wrapper) stream)
   (print-unreadable-object (object stream :type t :identity nil)
     (format stream "{#X~8,'0X}" (pointer-address (fw-ptr object)))))
+
+;; Apparently define-foreign-type _doesn't_ ensure that CLASS-NAME
+;; becomes a subclass of FOREIGN-TYPE
+(defclass wrapped-cffitype (cffi::enhanced-foreign-type) ())
 
  ;; POINTER-TO foreign type
 
@@ -49,7 +51,6 @@
     (let* ((type (pointer-type type))
            (instance (make-instance type)))
       (setf (fw-ptr instance) ptr)
-      (setf (fw-cffitype instance) type)
       instance)))
 
 (defmethod translate-to-foreign (wrapper (type pointer-to-type))
@@ -61,118 +62,120 @@
  ;; CFFI Wrapper Macros
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun make-accessor-defuns (accessor c-accessor instance-form)
-    `((defun ,accessor (instance)
-        (,c-accessor ,instance-form))
-      (defun (setf ,accessor) (v instance)
-        (setf (,c-accessor ,instance-form) v))
-      (export ',accessor)))
-
-  (defun make-array-accessors (accessor c-accessor instance-form num-accessor rec-fn rec-type)
-    `((defun ,accessor (instance)
-        (let* ((ptr0 (,c-accessor ,instance-form))
-               (num (,num-accessor ,instance-form))
-               (arr (make-array num)))
-          (loop for i from 0 below num
-                as ptr = (w[] ptr0 i)
-                do (setf (elt arr i) (,rec-fn :ptr ptr :cffitype ',rec-type)))
-          arr))))
-
   (defun make-c-conc-name (symbol-name)
-    (concatenate 'string "%" symbol-name "-"))
+    (concatenate 'string "%" (string symbol-name) "-"))
 
   (defun make-s-conc-name (symbol-name)
-    (concatenate 'string symbol-name "-"))
+    (concatenate 'string (string symbol-name) "-"))
 
   (defun make-handle-conc-name (handle-type)
-    (if handle-type (concatenate 'string (symbol-name handle-type) "-")))
+    (if handle-type (concatenate 'string (string handle-type) "-")))
 
   (defun make-type-name (symbol-name)
-    (intern (concatenate 'string symbol-name "-CFFITYPE")))
+    (intern (concatenate 'string (string symbol-name) "-CFFITYPE")))
 
   (defun make-foreign-name (symbol-name)
-    (intern (concatenate 'string "FOREIGN-" symbol-name)))
+    (intern (concatenate 'string "FOREIGN-" (string symbol-name))))
 
   (defun make-make-name (symbol-name)
     (intern (concatenate 'string "%MAKE-" (string symbol-name))))
 
-  (defun conc-name (name symbol)
-    (intern (concatenate 'string name (string symbol)))))
+  (defun accessor-name (type slot)
+    (intern (concatenate 'string (string type) "-" (string (car slot)))))
+
+  (defun make-accessor (type slot handle-name)
+    (let ((slot-name (car slot))
+          (slot-type (cffi::parse-type (cadr slot)))
+          (foreign-type-name (make-foreign-name type))
+          (instance-form (if handle-name '(w* instance) '(fw-ptr instance)))
+          (accessor-name (accessor-name (or handle-name type) slot)))
+      (typecase slot-type
+        (wrapped-cffitype
+         `(defun ,accessor-name (instance)
+            (,(make-make-name (cadr slot))
+             :ptr (foreign-slot-pointer ,instance-form
+                                        ',foreign-type-name
+                                        ',slot-name))))
+        (pointer-to-type
+         (let ((rec-type (pointer-type slot-type))
+               (rec-fn (make-make-name (pointer-type slot-type))))
+         `(defun ,accessor-name (instance)
+            (let* ((ptr0 (foreign-slot-value ,instance-form
+                                             ',foreign-type-name
+                                             ',slot-name))
+                   (num (foreign-slot-value ,instance-form
+                                            ',foreign-type-name
+                                            ',(pointer-array-size slot-type)))
+                   (arr (make-array num)))
+              (loop for i from 0 below num
+                    as ptr = (w[] ptr0 i ',rec-type)
+                    do (setf (elt arr i) (,rec-fn :ptr ptr)))
+              arr))))
+        (t
+         `(progn
+            (defun ,accessor-name (instance)
+              (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
+            (defun (setf ,accessor-name) (v instance)
+              (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v)))))))
+  
+  (defun make-accessors (type slots handle-name)
+    (loop for slot in slots
+          collecting (make-accessor type slot handle-name) into accessors
+          finally (return accessors))))
 
 (defmacro defcwrap (name slots &optional wrapper-slots)
   (let* ((handle-type (if (listp name) (cadr name) nil))
          (name (if (listp name) (car name) name))
-         (symbol-name (symbol-name name)))
-    (let ((c-conc-name (make-c-conc-name symbol-name))
-          (s-conc-name (make-s-conc-name symbol-name))
-          (handle-conc-name (make-handle-conc-name handle-type))
-          (type-name (make-type-name symbol-name))
-          (foreign-name (make-foreign-name symbol-name))
-          (make-name (make-make-name symbol-name)))
+         (symbol-str (symbol-name name)))
+    (let ((type-name (make-type-name symbol-str))
+          (foreign-name (make-foreign-name symbol-str))
+          (make-name (make-make-name symbol-str)))
       `(progn
-         (define-foreign-type ,type-name () ()
+         ;; Structs
+         (define-foreign-type ,type-name (wrapped-cffitype) ()
            (:actual-type ,foreign-name))
          (define-parse-method ,name () (make-instance ',type-name))
-         (defcstruct (,foreign-name :conc-name ,(make-symbol c-conc-name))
+         (defcstruct (,foreign-name :conc-name ,(make-symbol (make-c-conc-name symbol-str)))
            ,@slots)
          (defstruct (,name (:include foreign-wrapper)
                            (:constructor ,make-name))
            ,@wrapper-slots)
-         ,@(loop for slot in slots
-                 as slot-name = (symbol-name (car slot))
-                 as slot-type = (cffi::parse-type (cadr slot))
-                 as is-array = (and (typep slot-type 'pointer-to-type)
-                                    (not (null (pointer-array-size slot-type))))
-                 as slot-accessor = (conc-name s-conc-name slot-name)
-                 as c-accessor = (conc-name c-conc-name slot-name)
-                 as handle-accessor = (when handle-type (conc-name handle-conc-name slot-name))
-                 as num-accessor = (when is-array (conc-name c-conc-name (pointer-array-size slot-type)))
-                 as rec-fn = (when is-array
-                               (make-make-name (pointer-type slot-type)))
-                 as rec-type = (when is-array (pointer-type slot-type))
-                 collecting
-                 `(progn
-                    ,@(when handle-type
-                        (if is-array
-                            (make-array-accessors handle-accessor c-accessor '(w* instance)
-                                                  num-accessor rec-fn rec-type)
-                            (make-accessor-defuns handle-accessor c-accessor '(w* instance))))
-                    ,@(if is-array
-                          (make-array-accessors slot-accessor c-accessor '(fw-ptr instance)
-                                                  num-accessor rec-fn rec-type)
-                          (make-accessor-defuns slot-accessor c-accessor '(fw-ptr instance))))
-                   into accessors
-                 finally (return accessors))
-         (defmethod expand-to-foreign (wrapper (type ,type-name))
-           `(w* ,wrapper :pointer))
-         (defmethod expand-from-foreign (ptr (type ,type-name))
-           `(,',make-name :ptr ,ptr :cffitype ',',name))
+
+         ;; Accessors
+         ,@(make-accessors name slots nil)
+         ,@(when handle-type (make-accessors name slots handle-type))
+
+         ;; Translation
          (defmethod translate-to-foreign (wrapper (type ,type-name))
-           (w* wrapper :pointer))
+           (w* wrapper))
          (defmethod translate-from-foreign (ptr (type ,type-name))
-           (,make-name :ptr ptr :cffitype ',name))
+           (unless (null-pointer-p ptr)
+             (,make-name :ptr ptr)))
+
+         ;; Export
          (export ',name)))))
 
 (defmacro defcwraptype (name type)
-  (let ((symbol-name (symbol-name name)))
-    (let ((make-name (make-make-name symbol-name))
-          (foreign-name (make-foreign-name symbol-name))
-          (type-name (make-type-name symbol-name)))
+  (let ((symbol-str (symbol-name name)))
+    (let ((make-name (make-make-name symbol-str))
+          (foreign-name (make-foreign-name symbol-str))
+          (type-name (make-type-name symbol-str)))
       `(progn
-         (define-foreign-type ,type-name () ()
+         (define-foreign-type ,type-name (wrapped-cffitype) ()
            (:actual-type ,foreign-name))
          (define-parse-method ,name () (make-instance ',type-name))
          (defctype ,foreign-name ,type)
          (defstruct (,name (:include foreign-wrapper)
                            (:constructor ,make-name)))
-         (defmethod expand-to-foreign (wrapper (type ,type-name))
-           `(w* ,wrapper :pointer))
-         (defmethod expand-from-foreign (ptr (type ,type-name))
+         #+-(defmethod expand-to-foreign (wrapper (type ,type-name))
+           `(w* ,wrapper))
+         #+-(defmethod expand-from-foreign (ptr (type ,type-name))
            `(,',make-name :ptr ,ptr :cffitype ',',name))
          (defmethod translate-to-foreign (wrapper (type ,type-name))
-           (w* wrapper :pointer))
+           (w* wrapper))
          (defmethod translate-from-foreign (ptr (type ,type-name))
-           (,make-name :ptr ptr :cffitype ',name))
+           (unless (null-pointer-p ptr)
+             (,make-name :ptr ptr)))
          (export ',name)))))
 
 (defmacro make-wrapper ((handle-var ptr-var foreign-type) init-form free-form)
@@ -180,7 +183,7 @@
         (make-name (make-make-name (symbol-name foreign-type)))
         (foreign-name (make-foreign-name (symbol-name foreign-type))))
     `(let* ((,ptr-var (libc-calloc (foreign-type-size ',foreign-name) 1))
-            (,handle-var (,make-name :ptr ,ptr-var :cffitype ',foreign-type))
+            (,handle-var (,make-name :ptr ,ptr-var))
             (,err ,init-form))
             (if (eq ,err :ok)
                 (tg:finalize ,handle-var (lambda ()

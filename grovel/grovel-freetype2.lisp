@@ -36,16 +36,6 @@
 (ctype ft-f2dot14 "FT_F2Dot14")
 (ctype ft-f26dot6 "FT_F26Dot6")
 
-(cenum ft-pixel-mode
-       ((:none "FT_PIXEL_MODE_NONE"))
-       ((:mono "FT_PIXEL_MODE_MONO"))
-       ((:gray "FT_PIXEL_MODE_GRAY"))
-       ((:gray2 "FT_PIXEL_MODE_GRAY2"))
-       ((:gray4 "FT_PIXEL_MODE_GRAY4"))
-       ((:lcd "FT_PIXEL_MODE_LCD"))
-       ((:lcd-v "FT_PIXEL_MODE_LCD_V"))
-       ((:max "FT_PIXEL_MODE_MAX")))
-
 (cenum ft-glyph-format
        ((:none "FT_GLYPH_FORMAT_NONE"))
        ((:composite "FT_GLYPH_FORMAT_COMPOSITE"))

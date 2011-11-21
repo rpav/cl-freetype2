@@ -6,7 +6,7 @@
   (library (:pointer ft-library)))
 
 (defcfun ("FT_Done_FreeType" ft-done-freetype) ft-error
-  (library :pointer))
+  (library ft-library))
 
 (defun make-freetype ()
   (make-wrapper (library &library ft-library)

@@ -6,7 +6,6 @@
   (let* ((ptr (funcall alloc-fn (foreign-type-size type) 1))
          (wrapper (make-instance type)))
     (setf (fw-ptr wrapper) ptr)
-    (setf (fw-cffitype wrapper) type)
     (tg:finalize ptr (lambda () (funcall free-fn ptr)))
     wrapper))
 
