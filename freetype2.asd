@@ -18,7 +18,10 @@
                (:file "ft2-lib")
                (:file "ft2-init")
                (:file "ft2-basic-types")
-               (:file "ft2-face")))
+               (:file "ft2-face")
+               (:file "ft2-glyph")
+               (:file "ft2-size")
+               (:file "ft2-outline")))
 
 ;; Making an :around COMPILE-OP GROVEL-FILE is sortof the right way to do
 ;; this, if it didn't override everything else anyway.  Fix.

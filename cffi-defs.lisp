@@ -25,10 +25,38 @@
 (defbitfield (ft-style-flags ft-long)
   (:italic #x1) :bold)
 
+(defbitfield (ft-fstype-flags ft-ushort)
+  (:installable-embedding #x00)
+  (:restricted-license-embedding #x02)
+  (:preview-and-print-embedding #x04)
+  (:editable-embedding #x08)
+  (:no-subsetting #x0100)
+  (:bitmap-embedding-only #x0200))
+
+(defbitfield (ft-outline-flags :int)
+  (:none #x0) :owner :even-odd-file :reverse-fill :ignore-dropouts
+  :smart-dropouts :include-stubs
+
+  (:high-precision #x100) :single-pass)
+
  ;; Enums
 
 (defcenum (ft-pixel-mode :char)
   :none :mono :gray :gray2 :gray4 :lcd :lcd-v)
+
+(defcenum (ft-glyph-bbox-mode ft-uint)
+  (:none 0)
+  (:subpixels 0)
+  (:gridfit 1)
+  (:truncate 2)
+  (:pixels 3))
+
+(defcenum ft-orientation
+  (:truetype 0)
+  (:postscript 1)
+  (:fill-right 0)
+  (:fill-left 1)
+  (:none))
 
  ;; Basic Types
 
@@ -131,7 +159,16 @@
      (points :pointer)
      (tags :pointer)
      (contours :pointer)
-     (flags :int)))
+     (flags ft-outline-flags)))
+
+(defcwrap ft-outline-funcs
+    ((move-to :pointer)
+     (line-to :pointer)
+     (conic-to :pointer)
+     (cubic-to :pointer)
+     
+     (shift :int)
+     (delta ft-pos)))
 
  ;; Basic API
 (defcwraptype ft-library :pointer)
@@ -274,3 +311,26 @@
      (height ft-long)
      (hori-resolution ft-uint)
      (vert-resolution ft-uint)))
+
+ ;; Glyphs
+
+(defcwraptype ft-glyph :pointer)
+(defcwraptype ft-bitmapglyph :pointer)
+(defcwraptype ft-outlineglyph :pointer)
+
+(defcwrap (ft-glyphrec ft-glyph)
+    ((library ft-library)
+     (clazz :pointer)
+     (format ft-glyph-format)
+     (advance ft-vector)))
+
+(defcwrap (ft-bitmapglyphrec ft-bitmapglyph)
+    ((root ft-glyphrec)
+     (left ft-int)
+     (top ft-int)
+     (bitmap ft-bitmap)))
+
+(defcwrap (ft-outlineglyphrec ft-outlineglyph)
+    ((root ft-outlineglyph)
+     (outline ft-outline)))
+
