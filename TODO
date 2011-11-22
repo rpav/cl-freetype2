@@ -23,7 +23,7 @@ TODO
        + new-face
        + attach-file
        - new-memory-face
-       - check-font-file: use FT_Open_Face with negative face index for
+       + check-font-file: use FT_Open_Face with negative face index for
          quick validity check
      = Char/Glyph
        + select-charmap
@@ -39,8 +39,8 @@ TODO
        + set-transform
 
      = Query
-       - get-kerning FACE CHAR-OR-CODE1 CHAR-OR-CODE2 &optional MODE
-       - get-track-kerning
+       + get-kerning FACE CHAR-OR-CODE1 CHAR-OR-CODE2 &optional MODE
+       + get-track-kerning FACE POINT-SIZE TIGHTNESS => KERNING
        
        - get-glyph-name FACE CHAR-OR-CODE
        - get-name-index FACE NAME

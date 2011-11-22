@@ -39,6 +39,9 @@
 
   (:high-precision #x100) :single-pass)
 
+(defbitfield (ft-open-flags ft-uint)
+  (:memory #x1) :stream :pathname :driver :params)
+
  ;; Enums
 
 (defcenum (ft-pixel-mode :char)
@@ -296,14 +299,14 @@
      (data ft-pointer)))
 
 (defcwrap ft-open-args
-    ((flags ft-uint)
+    ((flags ft-open-flags)
      (memory-base :pointer)
      (memory-size ft-long)
      (pathname :pointer)
      (stream ft-stream)
      (driver ft-module)
      (num-params ft-int)
-     (params ft-parameter)))
+     (params :pointer)))
 
 (defcwrap (ft-size-requestrec ft-size-request)
     ((type ft-size-request-type)

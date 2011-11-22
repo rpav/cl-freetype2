@@ -10,8 +10,7 @@
   (glyph ft-glyphslot)
   (sub-index ft-uint)
   (p-index (:pointer ft-int))
-  (p-flags (:pointer ft-u
-                     int))
+  (p-flags (:pointer ft-uint))
   (p-arg1 (:pointer ft-int))
   (p-arg2 (:pointer ft-int))
   (p-transform (:pointer ft-matrix)))
@@ -44,14 +43,3 @@
 
 (defcfun ("FT_Done_Glyph" ft-done-glyph) :void
   (glyph ft-glyph))
-
- ;; Lisp Functions
-
-(defun render-glyph (face-or-glyphslot &optional (render-mode :normal))
-  (etypecase face-or-glyphslot
-    (ft-glyphslot
-     (ft-render-glyph face-or-glyphslot render-mode)
-     face-or-glyphslot)
-    (ft-face
-     (ft-render-glyph (ft-face-glyph face-or-glyphslot) render-mode)
-     (ft-face-glyph face-or-glyphslot))))

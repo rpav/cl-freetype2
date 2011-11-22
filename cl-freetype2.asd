@@ -1,7 +1,7 @@
 (cl:eval-when (:load-toplevel :execute)
   (asdf:load-system :cffi-grovel))
 
-(defsystem :freetype2
+(defsystem :cl-freetype2
   :description "Wrapper for the Freetype2 library"
 
   :depends-on (:cffi :trivial-garbage)
@@ -21,12 +21,16 @@
                (:file "ft2-face")
                (:file "ft2-glyph")
                (:file "ft2-size")
-               (:file "ft2-outline")))
+               (:file "ft2-outline")
+
+               (:file "face")
+               (:file "bitmap")
+               (:file "glyph")))
 
 ;; Making an :around COMPILE-OP GROVEL-FILE is sortof the right way to do
 ;; this, if it didn't override everything else anyway.  Fix.
 (push (concatenate 'string "-I"
                    (directory-namestring
                     (asdf:component-pathname
-                     (asdf:find-component :freetype2 '("freetype2-grovel")))))
+                     (asdf:find-component :cl-freetype2 '("freetype2-grovel")))))
       cffi-grovel::*cc-flags*)

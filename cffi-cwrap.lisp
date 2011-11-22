@@ -91,11 +91,16 @@
           (accessor-name (accessor-name (or handle-name type) slot)))
       (typecase slot-type
         (wrapped-cffitype
-         `(defun ,accessor-name (instance)
-            (,(make-make-name (cadr slot))
-             :ptr (foreign-slot-pointer ,instance-form
+         `(progn
+            (defun ,accessor-name (instance)
+              (,(make-make-name (cadr slot))
+               :ptr (foreign-slot-pointer ,instance-form
+                                          ',foreign-type-name
+                                          ',slot-name)))
+            (defun (setf ,accessor-name) (v instance)
+              (setf (foreign-slot-value ,instance-form
                                         ',foreign-type-name
-                                        ',slot-name))))
+                                        ',slot-name) v))))
         (pointer-to-type
          (let ((rec-type (pointer-type slot-type))
                (rec-fn (make-make-name (pointer-type slot-type))))
@@ -147,7 +152,7 @@
 
          ;; Translation
          (defmethod translate-to-foreign (wrapper (type ,type-name))
-           (w* wrapper))
+           (if wrapper (w* wrapper) (null-pointer)))
          (defmethod translate-from-foreign (ptr (type ,type-name))
            (unless (null-pointer-p ptr)
              (,make-name :ptr ptr)))
@@ -172,7 +177,7 @@
          #+-(defmethod expand-from-foreign (ptr (type ,type-name))
            `(,',make-name :ptr ,ptr :cffitype ',',name))
          (defmethod translate-to-foreign (wrapper (type ,type-name))
-           (w* wrapper))
+           (if wrapper (w* wrapper) (null-pointer)))
          (defmethod translate-from-foreign (ptr (type ,type-name))
            (unless (null-pointer-p ptr)
              (,make-name :ptr ptr)))

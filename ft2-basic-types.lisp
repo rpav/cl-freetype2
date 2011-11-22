@@ -9,6 +9,15 @@
     (tg:finalize ptr (lambda () (funcall free-fn ptr)))
     wrapper))
 
+(defmacro ft-error (form &body body)
+  "Handle the value of FORM as a freetype return; if the value is not :OK,
+raise an error, and run BODY.  Otherwise, do nothing."
+  (let ((vsym (gensym)))
+    `(let ((,vsym ,form))
+       (unless (eq :OK ,vsym)
+         ,@body
+         (error "Freetype error: ~A" ,vsym)))))
+
  ;; Types
 
 (defun make-matrix (xx xy yx yy)
