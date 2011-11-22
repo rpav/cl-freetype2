@@ -1,0 +1,57 @@
+TODO
+   + Basic structures
+   + Basic load/render to array
+   + Complete basic interface (load from memory, attach file/stream)
+     x Streams .. later
+   - Extended interface
+     + Glyph Variants
+     + Glyph functions
+     + Size functions
+     - Format API
+       - Multiple Masters?
+       - TTF
+       - T1
+       - SFNT
+       - BDF/PCF
+       - CID
+       - PFR
+       - Win FNT
+       - Gasp Table
+   + Outline Data
+   = Simplified/Lispified API
+     = Opening
+       + new-face
+       + attach-file
+       - new-memory-face
+       - check-font-file: use FT_Open_Face with negative face index for
+         quick validity check
+     = Char/Glyph
+       + select-charmap
+       x set-charmap
+       x get-charmap-index
+       + set-char-size
+       + set-pixel-sizes
+       + get-char-index
+       + load-glyph
+       + load-char
+       ?
+     = Transformation
+       + set-transform
+
+     = Query
+       - get-kerning FACE CHAR-OR-CODE1 CHAR-OR-CODE2 &optional MODE
+       - get-track-kerning
+       
+       - get-glyph-name FACE CHAR-OR-CODE
+       - get-name-index FACE NAME
+       - get-postscript-name FACE
+       
+       + get-fstype-flags
+       
+       - do-chars FACE &body BODY
+
+       - subglyph-info ?
+       
+     - Variants?
+     
+   - etc

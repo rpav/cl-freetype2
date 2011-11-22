@@ -26,5 +26,7 @@
 ;; Making an :around COMPILE-OP GROVEL-FILE is sortof the right way to do
 ;; this, if it didn't override everything else anyway.  Fix.
 (push (concatenate 'string "-I"
-                   (directory-namestring (asdf:component-pathname (asdf:find-component :freetype2 '("freetype2-grovel")))))
+                   (directory-namestring
+                    (asdf:component-pathname
+                     (asdf:find-component :freetype2 '("freetype2-grovel")))))
       cffi-grovel::*cc-flags*)

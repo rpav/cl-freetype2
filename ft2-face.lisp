@@ -21,9 +21,11 @@
   (face-index ft-long)
   (face (:pointer ft-face)))
 
-(defcfun ("FT_Attach_File" ft-attach-file) ft-error
+(defcfun ("FT_Attach_File" attach-file) ft-error
   (face ft-face)
   (pathname :string))
+
+(export 'attach-file)
 
 ;; NOT IMPLEMENTED: FT_Attach_Stream
 
@@ -48,10 +50,14 @@
   (horz-resolution ft-uint)
   (vert-resolution ft-uint))
 
+(export 'set-char-size)
+
 (defcfun ("FT_Set_Pixel_Sizes" set-pixel-sizes) ft-error
   (face ft-face)
   (pixel-width ft-uint)
   (pixel-height ft-uint))
+
+(export 'set-pixel-size)
 
 (defcfun ("FT_Load_Glyph" ft-load-glyph) ft-error
   (face ft-face)
@@ -91,6 +97,8 @@
   (face ft-face)
   (encoding ft-encoding))
 
+(export 'select-charmap)
+
 (defcfun ("FT_Set_Charmap" ft-set-charmap) ft-error
   (face ft-face)
   (charmap ft-charmap))
@@ -117,6 +125,8 @@
 
 (defcfun ("FT_Get_FSType_Flags" get-fstype-flags) ft-fstype-flags
   (face ft-face))
+
+(export 'get-fstype-flags)
 
  ;; C: Variant Functions
 
@@ -160,16 +170,24 @@
     (ft-new-face library pathname index &face)
     (ft-done-face (p* &face))))
 
+(export 'new-face)
+
 (defun get-char-index (face char-or-code)
   (etypecase char-or-code
     (character (ft-get-char-index face (char-code char-or-code)))
     (integer (ft-get-char-index face char-or-code))))
 
+(export 'get-char-index)
+
 (defun load-glyph (face glyph-index &optional (load-flags :default))
   (ft-load-glyph face glyph-index load-flags))
 
+(export 'load-glyph)
+
 (defun load-char (face char-or-code &optional (load-flags :default))
   (load-glyph face (get-char-index face char-or-code) load-flags))
+
+(export 'load-char)
 
 (defun convert-matrix (matrix)
   (etypecase matrix
@@ -197,3 +215,5 @@
   (let ((ft-matrix (convert-matrix matrix))
         (ft-vector (convert-vector delta)))
     (ft-set-transform face ft-matrix ft-vector)))
+
+(export 'set-transform)
