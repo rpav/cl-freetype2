@@ -87,11 +87,13 @@
 (defcfun ("FT_Get_Glyph_Name" ft-get-glyph-name) ft-error
   (face ft-face)
   (glyph-index ft-uint)
-  (buffer ft-pointer)
+  (buffer :pointer)
   (buffer-max ft-uint))
 
-(defcfun ("FT_Get_Postscript_Name" ft-get-postscript-name) :string
+(defcfun ("FT_Get_Postscript_Name" get-postscript-name) :string
   (face ft-face))
+
+(export 'get-postscript-name)
 
 (defcfun ("FT_Select_Charmap" select-charmap) ft-error
   (face ft-face)
@@ -119,9 +121,11 @@
   (char-code ft-ulong)
   (agindex (:pointer ft-uint)))
 
-(defcfun ("FT_Get_Name_Index" ft-get-name-index) ft-uint
+(defcfun ("FT_Get_Name_Index" get-name-index) ft-uint
   (face ft-face)
   (glyph-name :string))
+
+(export 'get-name-index)
 
 (defcfun ("FT_Get_FSType_Flags" get-fstype-flags) ft-fstype-flags
   (face ft-face))
@@ -155,3 +159,18 @@
     (:pointer ft-uint32)
   (face ft-face)
   (variant-selector ft-ulong))
+
+ ;; Advance Functions
+
+(defcfun ("FT_Get_Advance" ft-get-advance) ft-error
+  (face ft-face)
+  (gindex ft-uint)
+  (load-flags ft-load-flags)
+  (padvance (:pointer ft-fixed)))
+
+(defcfun ("FT_Get_Advances" ft-get-advances) ft-error
+  (face ft-face)
+  (start ft-uint)
+  (count ft-uint)
+  (load-flags ft-load-flags)
+  (padvances (:pointer ft-fixed)))

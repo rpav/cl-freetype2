@@ -9,16 +9,16 @@
     (tg:finalize ptr (lambda () (funcall free-fn ptr)))
     wrapper))
 
-(defmacro ft-error (form &body body)
+(defmacro ft-error (form &body cleanup)
   "Handle the value of FORM as a freetype return; if the value is not :OK,
-raise an error, and run BODY.  Otherwise, do nothing."
+raise an error, and run CLEANUP.  Otherwise, take no further action."
   (let ((vsym (gensym)))
     `(let ((,vsym ,form))
        (unless (eq :OK ,vsym)
-         ,@body
+         ,@cleanup
          (error "Freetype error: ~A" ,vsym)))))
 
- ;; Types
+ ;; Matrices and Vectors
 
 (defun make-matrix (xx xy yx yy)
   (let ((matrix (make-collected-foreign 'ft-matrix)))
@@ -33,3 +33,43 @@ raise an error, and run BODY.  Otherwise, do nothing."
     (setf (ft-vector-x vector) x)
     (setf (ft-vector-y vector) y)
     vector))
+
+(defun convert-matrix (matrix)
+  (etypecase matrix
+    (ft-matrix (& matrix))
+    ((array * (2 2))
+     (& (make-matrix (aref matrix 0 0)
+                     (aref matrix 0 1)
+                     (aref matrix 1 0)
+                     (aref matrix 1 1))))
+    ((or (simple-vector 4)
+         (array * (4)))
+     (& (make-matrix (aref matrix 0) (aref matrix 1)
+                     (aref matrix 2) (aref matrix 3))))
+    (null (null-pointer))))
+
+(defun convert-vector (vector)
+  (etypecase vector
+    (ft-vector (& vector))
+    ((or (simple-vector 2)
+         (array * 2))
+     (& (make-vector (aref vector 0) (aref vector 1))))
+    (null (null-pointer))))
+
+ ;; Fixed-point
+
+(declaim (inline ft-26dot6-to-float
+                 ft-26dot6-to-int
+                 ft-16dot16-to-float))
+
+(defun ft-26dot6-to-float (f)
+  (declare (type fixnum f))
+  (coerce (/ f #x40) 'float))
+
+(defun ft-26dot6-to-int (f)
+  (declare (type fixnum f))
+  (ash f -6))
+
+(defun ft-16dot16-to-float (f)
+  (declare (type fixnum f))
+  (coerce (/ f #x10000) 'float))

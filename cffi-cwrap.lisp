@@ -83,6 +83,11 @@
   (defun accessor-name (type slot)
     (intern (concatenate 'string (string type) "-" (string (car slot)))))
 
+  (defun bitfield-test-name (type slot)
+    (intern (concatenate 'string
+                         (string type) "-" (string (car slot))
+                         "-TEST")))
+
   (defun make-accessor (type slot handle-name)
     (let ((slot-name (car slot))
           (slot-type (cffi::parse-type (cadr slot)))
@@ -116,6 +121,19 @@
                     as ptr = (w[] ptr0 i ',rec-type)
                     do (setf (elt arr i) (,rec-fn :ptr ptr)))
               arr))))
+        (cffi::foreign-bitfield
+         (let ((test-name (bitfield-test-name (or handle-name type) slot))
+               (canonical-type (cffi::canonicalize slot-type)))
+           `(progn
+              (defun ,accessor-name (instance)
+                (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
+              (defun (setf ,accessor-name) (v instance)
+                (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
+              (defmacro ,test-name (instance flags)
+                `(let ((instance ,instance))
+                   (logtest (foreign-bitfield-value ',',(cffi::name slot-type) ,flags)
+                            (mem-ref (foreign-slot-pointer ,',instance-form ',',foreign-type-name ',',slot-name)
+                                     ',',canonical-type)))))))
         (t
          `(progn
             (defun ,accessor-name (instance)

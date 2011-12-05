@@ -12,7 +12,10 @@
 
   :monochrome :linear-design
 
-  (:no-autohint #x8000))
+  (:no-autohint #x8000)
+
+  ;; Only valid for ft-get-advance / ft-get-advances
+  (:fast-advance-only #x20000000))
 
 (defbitfield (ft-face-flags ft-long)
   (:scalable #x1)
@@ -189,8 +192,6 @@
 (defcwraptype ft-size-request :pointer)
 
 (cffi::canonicalize-foreign-type :string)
-
-(typep (cffi::parse-type 'ft-glyph-metrics) 'wrapped-cffitype)
 
 (defcwrap ft-glyph-metrics
     ((width ft-pos)

@@ -8,7 +8,7 @@ TODO
      + Glyph functions
      + Size functions
      - Format API
-       - Multiple Masters?
+       - Multiple Masters
        - TTF
        - T1
        - SFNT
@@ -34,17 +34,21 @@ TODO
        + get-char-index
        + load-glyph
        + load-char
-       ?
      = Transformation
        + set-transform
 
      = Query
        + get-kerning FACE CHAR-OR-CODE1 CHAR-OR-CODE2 &optional MODE
        + get-track-kerning FACE POINT-SIZE TIGHTNESS => KERNING
+
+       - get-advance FACE CHAR
+         - Reimplement to use advance.x 
+       - get-advances FACE STRING
+
        
-       - get-glyph-name FACE CHAR-OR-CODE
-       - get-name-index FACE NAME
-       - get-postscript-name FACE
+       + get-glyph-name FACE CHAR-OR-CODE
+       + get-name-index FACE NAME
+       + get-postscript-name FACE
        
        + get-fstype-flags
        
@@ -53,5 +57,18 @@ TODO
        - subglyph-info ?
        
      - Variants?
-     
+     - Outlines
+     = Render
+       + render-glyph
+       = bitmap-to-array: Would be nice to add pixel process/output function
+     - Easy string walk/render
+       - do-string-render? -> BITMAP OFFSET ...
+       - do-string-offsets? -> CHAR KERN ...
    - etc
+
+
+   - Cleanup:
+     - Lisp API calls behind FT-ERROR
+     - Renaming:
+       - fw-ptr
+       - ft-error macro

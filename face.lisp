@@ -30,6 +30,11 @@
 
 (export 'new-face)
 
+(defun fixed-face-p (face)
+  (not (null (find :fixed-width (ft-face-face-flags face)))))
+
+(export 'fixed-face-p)
+
 (defun get-char-index (face char-or-code)
   (etypecase char-or-code
     (character (ft-get-char-index face (char-code char-or-code)))
@@ -47,28 +52,6 @@
 
 (export 'load-char)
 
-(defun convert-matrix (matrix)
-  (etypecase matrix
-    (ft-matrix (& matrix))
-    ((array * (2 2))
-     (& (make-matrix (aref matrix 0 0)
-                     (aref matrix 0 1)
-                     (aref matrix 1 0)
-                     (aref matrix 1 1))))
-    ((or (simple-vector 4)
-         (array * (4)))
-     (& (make-matrix (aref matrix 0) (aref matrix 1)
-                     (aref matrix 2) (aref matrix 3))))
-    (null (null-pointer))))
-
-(defun convert-vector (vector)
-  (etypecase vector
-    (ft-vector (& vector))
-    ((or (simple-vector 2)
-         (array * 2))
-     (& (make-vector (aref vector 0) (aref vector 1))))
-    (null (null-pointer))))
-
 (defun set-transform (face matrix delta)
   (let ((ft-matrix (convert-matrix matrix))
         (ft-vector (convert-vector delta)))
@@ -76,14 +59,26 @@
 
 (export 'set-transform)
 
-(defun get-kerning (face char1 char2 &optional (mode :default))
+(defun get-kerning (face char1 char2 &optional mode)
   (let ((index1 (get-char-index face char1))
         (index2 (get-char-index face char2)))
     (with-foreign-object (v 'ft-vector)
-      (ft-error (ft-get-kerning face index1 index2 mode v))
-      (list (%ft-vector-x v) (%ft-vector-y v)))))
+      (ft-error (ft-get-kerning face index1 index2 (or mode :default) v))
+      (let ((kern (%ft-vector-x v)))
+        (if (or mode (fixed-face-p face))
+            kern
+            (ft-26dot6-to-int kern))))))
 
 (export 'get-kerning)
+
+(defun get-string-kerning (face string &optional mode)
+  (let ((kern (make-array (length string) :initial-element 0)))
+    (loop for i from 1 below (length string)
+          as c1 = (aref string (1- i))
+          as c2 = (aref string i)
+          do (setf (aref kern i)
+                   (get-kerning face c1 c2 mode)))
+    kern))
 
 (defun get-track-kerning (face point-size degree)
   (with-foreign-object (akerning 'ft-fixed)
@@ -92,3 +87,34 @@
     (mem-ref akerning 'ft-fixed)))
 
 (export 'get-track-kerning)
+
+(defun get-glyph-name (face char-or-code)
+  (with-foreign-pointer (buffer 64 len)
+    (ft-error (ft-get-glyph-name face (get-char-index face char-or-code)
+                                 buffer len))
+    (foreign-string-to-lisp buffer :max-chars len)))
+
+(export 'get-glyph-name)
+
+(defun get-advance (face char-or-code &optional load-flags)
+  (let ((gindex (get-char-index face char-or-code)))
+    (with-foreign-object (padvance 'ft-fixed)
+      (if (eq :ok (ft-get-advance face gindex (cons :fast-advance-only load-flags) padvance))
+          (mem-ref padvance 'ft-fixed)
+          (progn
+            (load-glyph face gindex load-flags)
+            (ft-26dot6-to-float
+             (ft-vector-x (ft-glyphslot-advance (ft-face-glyph face)))))))))
+
+(export 'get-advance)
+
+(defun get-string-advances (face string &optional load-flags)
+  (let ((advance (make-array (length string) :element-type 'float
+                                             :initial-element 0.0)))
+    (loop for c across string
+          for i from 0
+          do (setf (aref advance i)
+                   (get-advance face c load-flags)))
+    advance))
+
+(export 'get-string-advances)
