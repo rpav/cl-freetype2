@@ -73,9 +73,9 @@
 
 (defun get-string-kerning (face string &optional mode)
   (let ((kern (make-array (length string) :initial-element 0)))
-    (loop for i from 1 below (length string)
-          as c1 = (aref string (1- i))
-          as c2 = (aref string i)
+    (loop for i from 0 below (1- (length string))
+          as c1 = (aref string i)
+          as c2 = (aref string (1+ i))
           do (setf (aref kern i)
                    (get-kerning face c1 c2 mode)))
     kern))
@@ -97,14 +97,18 @@
 (export 'get-glyph-name)
 
 (defun get-advance (face char-or-code &optional load-flags)
-  (let ((gindex (get-char-index face char-or-code)))
+  (let ((gindex (get-char-index face char-or-code))
+        (flags-value (convert-to-foreign load-flags 'ft-load-flags))
+        (fast-flag (convert-to-foreign '(:fast-advance-only) 'ft-load-flags))
+        (vert-flag (convert-to-foreign '(:vertical-layout) 'ft-load-flags)))
     (with-foreign-object (padvance 'ft-fixed)
-      (if (eq :ok (ft-get-advance face gindex (cons :fast-advance-only load-flags) padvance))
+      (if (eq :ok (ft-get-advance face gindex (logior flags-value fast-flag) padvance))
           (mem-ref padvance 'ft-fixed)
-          (progn
+          (let ((advance (ft-glyphslot-advance (ft-face-glyph face))))
             (load-glyph face gindex load-flags)
-            (ft-26dot6-to-float
-             (ft-vector-x (ft-glyphslot-advance (ft-face-glyph face)))))))))
+            (ft-26dot6-to-float (if (logtest vert-flag flags-value)
+                                    (ft-vector-y advance)
+                                    (ft-vector-x advance))))))))
 
 (export 'get-advance)
 

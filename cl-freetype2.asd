@@ -25,7 +25,9 @@
 
                (:file "face")
                (:file "bitmap")
-               (:file "glyph")))
+               (:file "glyph")
+
+               (:file "toy")))
 
 ;; Making an :around COMPILE-OP GROVEL-FILE is sortof the right way to do
 ;; this, if it didn't override everything else anyway.  Fix.
