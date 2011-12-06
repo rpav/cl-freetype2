@@ -210,7 +210,7 @@
             (,err ,init-form))
             (if (eq ,err :ok)
                 (tg:finalize ,handle-var (lambda ()
-                                           (format t "~A ~A~%" ',free-form ,ptr-var)
+                                           #+-(format t "~A ~A~%" ',free-form ,ptr-var)
                                            ,free-form
                                            (libc-free ,ptr-var)))
                 (progn
