@@ -41,9 +41,9 @@ TODO
        + get-kerning FACE CHAR-OR-CODE1 CHAR-OR-CODE2 &optional MODE
        + get-track-kerning FACE POINT-SIZE TIGHTNESS => KERNING
 
-       - get-advance FACE CHAR
-         - Reimplement to use advance.x 
-       - get-advances FACE STRING
+       + get-advance FACE CHAR
+         + Reimplement to use advance.x 
+       + get-advances FACE STRING
 
        
        + get-glyph-name FACE CHAR-OR-CODE
