@@ -23,6 +23,8 @@
               (ft-open-args-params args) (null-pointer))
         (ft-open-face library c-open-args -1 (null-pointer))))))
 
+(export 'check-font-file)
+
 (defun new-face (pathname &optional (index 0) (library *library*))
   (make-wrapper (face &face ft-face)
     (ft-new-face library (namestring pathname) index &face)
@@ -35,6 +37,17 @@
 
 (export 'fixed-face-p)
 
+(defun set-char-size (face char-width char-height horz-resolution vert-resolution)
+  (ft-error (ft-set-char-size face char-width char-height
+                              horz-resolution vert-resolution)))
+
+(export 'set-char-size)
+
+(defun set-pixel-sizes (face pixel-width pixel-height)
+  (ft-error (ft-set-pixel-sizes face pixel-width pixel-height)))
+
+(export 'set-pixel-sizes)
+
 (defun get-char-index (face char-or-code)
   (etypecase char-or-code
     (character (ft-get-char-index face (char-code char-or-code)))
@@ -43,7 +56,7 @@
 (export 'get-char-index)
 
 (defun load-glyph (face glyph-index &optional (load-flags :default))
-  (ft-load-glyph face glyph-index load-flags))
+  (ft-error (ft-load-glyph face glyph-index load-flags)))
 
 (export 'load-glyph)
 
@@ -79,6 +92,8 @@
           do (setf (aref kern i)
                    (get-kerning face c1 c2 mode)))
     kern))
+
+(export 'get-string-kerning)
 
 (defun get-track-kerning (face point-size degree)
   (with-foreign-object (akerning 'ft-fixed)
