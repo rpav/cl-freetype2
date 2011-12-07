@@ -67,7 +67,7 @@
       (let ((kern (%ft-vector-x v)))
         (if (or mode (fixed-face-p face))
             kern
-            (ft-26dot6-to-int kern))))))
+            (ft-26dot6-to-float kern))))))
 
 (export 'get-kerning)
 
