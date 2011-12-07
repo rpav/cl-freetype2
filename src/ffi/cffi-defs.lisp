@@ -1,4 +1,15 @@
-(in-package :freetype2)
+(in-package :freetype2-types)
+
+ ;; Exports from groveller
+
+(export '(+version-major+ +version-minor+ +version-patch+
+          size_t ft-byte ft-bytes ft-char ft-int ft-uint
+          ft-uint16 ft-int32 ft-uint32 ft-short ft-ushort ft-long
+          ft-ulong ft-bool ft-offset ft-ptrdist ft-string ft-tag
+          ft-fixed ft-pos ft-fword ft-ufword ft-f2dot14 ft-f26dot6
+
+          ft-glyph-format ft-encoding ft-size-request-type
+          ft-render-mode ft-kerning-mode ft-error))
 
  ;; Bit fields
 
@@ -17,6 +28,8 @@
   ;; Only valid for ft-get-advance / ft-get-advances
   (:fast-advance-only #x20000000))
 
+(export 'ft-load-flags)
+
 (defbitfield (ft-face-flags ft-long)
   (:scalable #x1)
   :fixed-sizes :fixed-width :sfnt
@@ -25,8 +38,12 @@
   :glyph-names :external-stream
   :hinter :cid-keyed :tricky)
 
+(export 'ft-face-flags)
+
 (defbitfield (ft-style-flags ft-long)
   (:italic #x1) :bold)
+
+(export 'ft-style-flags)
 
 (defbitfield (ft-fstype-flags ft-ushort)
   (:installable-embedding #x00)
@@ -36,19 +53,27 @@
   (:no-subsetting #x0100)
   (:bitmap-embedding-only #x0200))
 
+(export 'ft-fstype-flags)
+
 (defbitfield (ft-outline-flags :int)
   (:none #x0) :owner :even-odd-file :reverse-fill :ignore-dropouts
   :smart-dropouts :include-stubs
 
   (:high-precision #x100) :single-pass)
 
+(export 'ft-outline-flags)
+
 (defbitfield (ft-open-flags ft-uint)
   (:memory #x1) :stream :pathname :driver :params)
+
+(export 'ft-open-flags)
 
  ;; Enums
 
 (defcenum (ft-pixel-mode :char)
   :none :mono :gray :gray2 :gray4 :lcd :lcd-v)
+
+(export 'ft-pixel-mode)
 
 (defcenum (ft-glyph-bbox-mode ft-uint)
   (:none 0)
@@ -57,12 +82,16 @@
   (:truncate 2)
   (:pixels 3))
 
+(export 'ft-glyph-bbox-mode)
+
 (defcenum ft-orientation
   (:truetype 0)
   (:postscript 1)
   (:fill-right 0)
   (:fill-left 1)
   (:none))
+
+(export 'ft-orientation)
 
  ;; Basic Types
 
@@ -190,8 +219,6 @@
 (defcwraptype ft-subglyph :pointer)
 (defcwraptype ft-slot-internal :pointer)
 (defcwraptype ft-size-request :pointer)
-
-(cffi::canonicalize-foreign-type :string)
 
 (defcwrap ft-glyph-metrics
     ((width ft-pos)

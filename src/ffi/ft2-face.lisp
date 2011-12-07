@@ -1,4 +1,4 @@
-(in-package :freetype2)
+(in-package :freetype2-ffi)
 
  ;; C: Base Functions
 
@@ -8,6 +8,8 @@
   (face-index ft-long)
   (aface (:pointer ft-face)))
 
+(export 'ft-new-face)
+
 (defcfun ("FT_New_Memory_Face" ft-new-memory-face) ft-error
   (library ft-library)
   (file-base (:pointer ft-byte))
@@ -15,11 +17,15 @@
   (face-index ft-long)
   (aface :pointer))
 
+(export 'ft-new-memory-face)
+
 (defcfun ("FT_Open_Face" ft-open-face) ft-error
   (library ft-library)
   (args (:pointer ft-open-args))
   (face-index ft-long)
   (face (:pointer ft-face)))
+
+(export 'ft-open-face)
 
 (defcfun ("FT_Attach_File" attach-file) ft-error
   (face ft-face)
@@ -32,16 +38,24 @@
 (defcfun ("FT_Reference_Face" ft-reference-face) ft-error
   (face ft-face))
 
+(export 'ft-reference-face)
+
 (defcfun ("FT_Done_Face" ft-done-face) ft-error
   (face (:pointer ft-face)))
+
+(export 'ft-done-face)
 
 (defcfun ("FT_Select_Size" ft-select-size) ft-error
   (face ft-face)
   (strike-index ft-int))
 
+(export 'ft-select-size)
+
 (defcfun ("FT_Request_Size" ft-request-size) ft-error
   (face ft-face)
   (req ft-size-request))
+
+(export 'ft-request-size)
 
 (defcfun ("FT_Set_Char_Size" set-char-size) ft-error
   (face ft-face)
@@ -64,12 +78,16 @@
   (glyph-index ft-uint)
   (load-flags ft-load-flags))
 
+(export 'ft-load-glyph)
+
 ;; Implemented natively: FT_Load_Char
 
 (defcfun ("FT_Set_Transform" ft-set-transform) :void
   (face ft-face)
   (matrix (:pointer ft-matrix))
   (delta (:pointer ft-vector)))
+
+(export 'ft-set-transform)
 
 (defcfun ("FT_Get_Kerning" ft-get-kerning) ft-error
   (face ft-face)
@@ -78,17 +96,23 @@
   (kern-mode ft-kerning-mode)
   (akerning (:pointer ft-vector)))
 
+(export 'ft-get-kerning)
+
 (defcfun ("FT_Get_Track_Kerning" ft-get-track-kerning) ft-error
   (face ft-face)
   (point-size ft-fixed)
   (degree ft-int)
   (akerning (:pointer ft-fixed)))
 
+(export 'ft-get-track-kerning)
+
 (defcfun ("FT_Get_Glyph_Name" ft-get-glyph-name) ft-error
   (face ft-face)
   (glyph-index ft-uint)
   (buffer :pointer)
   (buffer-max ft-uint))
+
+(export 'ft-get-glyph-name)
 
 (defcfun ("FT_Get_Postscript_Name" get-postscript-name) :string
   (face ft-face))
@@ -105,21 +129,31 @@
   (face ft-face)
   (charmap ft-charmap))
 
+(export 'ft-set-charmap)
+
 (defcfun ("FT_Get_Charmap_Index" ft-get-charmap-index) ft-int
   (charmap ft-charmap))
+
+(export 'ft-get-charmap-index)
 
 (defcfun ("FT_Get_Char_Index" ft-get-char-index) ft-uint
   (face ft-face)
   (charcode ft-ulong))
 
+(export 'ft-get-char-index)
+
 (defcfun ("FT_Get_First_Char" ft-get-first-char) ft-ulong
   (face ft-face)
   (agindex (:pointer ft-uint)))
+
+(export 'ft-get-first-char)
 
 (defcfun ("FT_Get_Next_Char" ft-get-next-char) ft-ulong
   (face ft-face)
   (char-code ft-ulong)
   (agindex (:pointer ft-uint)))
+
+(export 'ft-get-next-char)
 
 (defcfun ("FT_Get_Name_Index" get-name-index) ft-uint
   (face ft-face)
@@ -140,25 +174,35 @@
   (charcode ft-ulong)
   (variant-selector ft-ulong))
 
+(export 'ft-face-getcharvariantindex)
+
 (defcfun ("FT_Face_GetCharVariantIsDefault" ft-face-getcharvariantisdefault)
     ft-int
   (face ft-face)
   (charcode ft-ulong)
   (variant-selector ft-ulong))
 
+(export 'ft-face-getcharvariantisdefault)
+
 (defcfun ("FT_Face_GetVariantSelectors" ft-face-getvariantselectors)
     (:pointer ft-uint32)
   (face ft-face))
+
+(export 'ft-face-getvariantselectors)
 
 (defcfun ("FT_Face_GetVariantsOfChar" ft-face-getvariantsofchar)
     (:pointer ft-uint32)
   (face ft-face)
   (charcode ft-ulong))
 
+(export 'ft-face-getvariantsofchar)
+
 (defcfun ("FT_Face_GetCharsOfVariant" ft-face-getcharsofvariant)
     (:pointer ft-uint32)
   (face ft-face)
   (variant-selector ft-ulong))
+
+(export 'ft-face-getcharsofvariant)
 
  ;; Advance Functions
 
@@ -168,9 +212,13 @@
   (load-flags ft-load-flags)
   (padvance (:pointer ft-fixed)))
 
+(export 'ft-get-advance)
+
 (defcfun ("FT_Get_Advances" ft-get-advances) ft-error
   (face ft-face)
   (start ft-uint)
   (count ft-uint)
   (load-flags ft-load-flags)
   (padvances (:pointer ft-fixed)))
+
+(export 'ft-get-advances)

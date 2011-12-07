@@ -64,7 +64,7 @@
         (index2 (get-char-index face char2)))
     (with-foreign-object (v 'ft-vector)
       (ft-error (ft-get-kerning face index1 index2 (or mode :default) v))
-      (let ((kern (%ft-vector-x v)))
+      (let ((kern (freetype2-types::%ft-vector-x v)))
         (if (or mode (fixed-face-p face))
             kern
             (ft-26dot6-to-float kern))))))

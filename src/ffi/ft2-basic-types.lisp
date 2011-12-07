@@ -1,4 +1,4 @@
-(in-package :freetype2)
+(in-package :freetype2-types)
 
  ;; Util
 
@@ -9,6 +9,8 @@
     (tg:finalize ptr (lambda () (funcall free-fn ptr)))
     wrapper))
 
+(export 'make-collected-foreign)
+
 (defmacro ft-error (form &body cleanup)
   "Handle the value of FORM as a freetype return; if the value is not :OK,
 raise an error, and run CLEANUP.  Otherwise, take no further action."
@@ -17,6 +19,8 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
        (unless (eq :OK ,vsym)
          ,@cleanup
          (error "Freetype error: ~A" ,vsym)))))
+
+(export 'ft-error)
 
  ;; Matrices and Vectors
 
@@ -28,11 +32,15 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
     (setf (ft-matrix-yy matrix) yy)
     matrix))
 
+(export 'make-matrix)
+
 (defun make-vector (x y)
   (let ((vector (make-collected-foreign 'ft-vector)))
     (setf (ft-vector-x vector) x)
     (setf (ft-vector-y vector) y)
     vector))
+
+(export 'make-vector)
 
 (defun convert-matrix (matrix)
   (etypecase matrix
@@ -48,6 +56,8 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
                      (aref matrix 2) (aref matrix 3))))
     (null (null-pointer))))
 
+(export 'convert-matrix)
+
 (defun convert-vector (vector)
   (etypecase vector
     (ft-vector (& vector))
@@ -55,6 +65,8 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
          (array * 2))
      (& (make-vector (aref vector 0) (aref vector 1))))
     (null (null-pointer))))
+
+(export 'convert-vector)
 
  ;; Fixed-point
 
@@ -66,10 +78,16 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
   (declare (type fixnum f))
   (coerce (/ f #x40) 'float))
 
+(export 'ft-26dot6-to-float)
+
 (defun ft-26dot6-to-int (f)
   (declare (type fixnum f))
   (ash f -6))
 
+(export 'ft-26dot6-to-int)
+
 (defun ft-16dot16-to-float (f)
   (declare (type fixnum f))
   (coerce (/ f #x10000) 'float))
+
+(export 'ft-16dot16-to-float)

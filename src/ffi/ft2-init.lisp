@@ -1,17 +1,13 @@
-(in-package :freetype2)
+(in-package :freetype2-ffi)
 
  ;; Initialization
 
 (defcfun ("FT_Init_FreeType" ft-init-freetype) ft-error
   (library (:pointer ft-library)))
 
+(export 'ft-init-freetype)
+
 (defcfun ("FT_Done_FreeType" ft-done-freetype) ft-error
   (library ft-library))
 
-(defun make-freetype ()
-  (make-wrapper (library &library ft-library)
-    (ft-init-freetype &library)
-    (ft-done-freetype (p* &library))))
-
-(defvar *library* (make-freetype))
-(export '*library*)
+(export 'ft-done-freetype)

@@ -1,4 +1,4 @@
-(in-package :freetype2)
+(in-package :freetype2-types)
 
  ;; Memory
 
@@ -6,14 +6,20 @@
   (nmemb size_t)
   (size size_t))
 
+(export 'libc-calloc)
+
 (defcfun (libc-free "free") :void
   (ptr :pointer))
+
+(export 'libc-free)
 
  ;; Wrapper Struct
 
 (declaim (inline fw-ptr))
 (defstruct (foreign-wrapper (:conc-name #:fw-))
   (ptr (cffi-sys:null-pointer) :type cffi-sys:foreign-pointer))
+
+(export 'fw-ptr)
 
 #+-(declaim (inline w* w[] p* &))
 (defun w* (wrapper &optional (type-cast :pointer))
@@ -27,6 +33,8 @@
   (mem-ref ptr type-cast))
 
 (defun & (wrapper) (fw-ptr wrapper))
+
+(export '(w* w[] p* &))
 
 (defmethod print-object ((object foreign-wrapper) stream)
   (print-unreadable-object (object stream :type t :identity nil)
@@ -105,46 +113,52 @@
             (defun (setf ,accessor-name) (v instance)
               (setf (foreign-slot-value ,instance-form
                                         ',foreign-type-name
-                                        ',slot-name) v))))
+                                        ',slot-name) v))
+            (export ',accessor-name)))
         (pointer-to-type
          (let ((rec-type (pointer-type slot-type))
                (rec-fn (make-make-name (pointer-type slot-type))))
-         `(defun ,accessor-name (instance)
-            (let* ((ptr0 (foreign-slot-value ,instance-form
-                                             ',foreign-type-name
-                                             ',slot-name))
-                   (num (foreign-slot-value ,instance-form
-                                            ',foreign-type-name
-                                            ',(pointer-array-size slot-type)))
-                   (arr (make-array num)))
-              (loop for i from 0 below num
-                    as ptr = (w[] ptr0 i ',rec-type)
-                    do (setf (elt arr i) (,rec-fn :ptr ptr)))
-              arr))))
-        (cffi::foreign-bitfield
-         (let ((test-name (bitfield-test-name (or handle-name type) slot))
-               (canonical-type (cffi::canonicalize slot-type)))
            `(progn
               (defun ,accessor-name (instance)
-                (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
-              (defun (setf ,accessor-name) (v instance)
-                (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
-              (defmacro ,test-name (instance flags)
-                `(let ((instance ,instance))
-                   (logtest (foreign-bitfield-value ',',(cffi::name slot-type) ,flags)
-                            (mem-ref (foreign-slot-pointer ,',instance-form ',',foreign-type-name ',',slot-name)
-                                     ',',canonical-type)))))))
-        (t
-         `(progn
-            (defun ,accessor-name (instance)
-              (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
-            (defun (setf ,accessor-name) (v instance)
-              (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v)))))))
-  
-  (defun make-accessors (type slots handle-name)
-    (loop for slot in slots
-          collecting (make-accessor type slot handle-name) into accessors
-          finally (return accessors))))
+                (let* ((ptr0 (foreign-slot-value ,instance-form
+                                                 ',foreign-type-name
+                                                 ',slot-name))
+                       (num (foreign-slot-value ,instance-form
+                                                ',foreign-type-name
+                                                ',(pointer-array-size slot-type)))
+                       (arr (make-array num)))
+                  (loop for i from 0 below num
+                        as ptr = (w[] ptr0 i ',rec-type)
+                        do (setf (elt arr i) (,rec-fn :ptr ptr)))
+                  arr))
+              (export ',accessor-name))))
+         (cffi::foreign-bitfield
+          (let ((test-name (bitfield-test-name (or handle-name type) slot))
+                (canonical-type (cffi::canonicalize slot-type)))
+            `(progn
+               (defun ,accessor-name (instance)
+                 (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
+               (defun (setf ,accessor-name) (v instance)
+                 (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
+               (defmacro ,test-name (instance flags)
+                 `(let ((instance ,instance))
+                    (logtest (foreign-bitfield-value ',',(cffi::name slot-type) ,flags)
+                             (mem-ref (foreign-slot-pointer ,',instance-form ',',foreign-type-name ',',slot-name)
+                                      ',',canonical-type))))
+               (export ',accessor-name)
+               (export ',test-name))))
+         (t
+          `(progn
+             (defun ,accessor-name (instance)
+               (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
+             (defun (setf ,accessor-name) (v instance)
+               (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
+             (export ',accessor-name))))))
+    
+    (defun make-accessors (type slots handle-name)
+      (loop for slot in slots
+            collecting (make-accessor type slot handle-name) into accessors
+            finally (return accessors))))
 
 (defmacro defcwrap (name slots &optional wrapper-slots)
   (let* ((handle-type (if (listp name) (cadr name) nil))
@@ -176,7 +190,10 @@
              (,make-name :ptr ptr)))
 
          ;; Export
-         (export ',name)))))
+         (export ',name)
+         (export ',type-name)
+         (export ',foreign-name)
+         (export ',make-name)))))
 
 (defmacro defcwraptype (name type)
   (let ((symbol-str (symbol-name name)))
@@ -199,7 +216,10 @@
          (defmethod translate-from-foreign (ptr (type ,type-name))
            (unless (null-pointer-p ptr)
              (,make-name :ptr ptr)))
-         (export ',name)))))
+         (export ',name)
+         (export ',type-name)
+         (export ',foreign-name)
+         (export ',make-name)))))
 
 (defmacro make-wrapper ((handle-var ptr-var foreign-type) init-form free-form)
   (let ((err (gensym))
@@ -218,3 +238,5 @@
                   (setf (fw-ptr ,handle-var) (null-pointer))
                   (error "FreeType error: ~A" ,err)))
        ,handle-var)))
+
+(export 'make-wrapper)

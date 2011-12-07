@@ -1,4 +1,4 @@
-(in-package :freetype2)
+(in-package :freetype2-types)
 
 (cc-flags "-I/usr/include/freetype2")
 (include "grovel-freetype.h")

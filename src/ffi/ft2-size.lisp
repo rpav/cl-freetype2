@@ -6,8 +6,14 @@
   (face ft-face)
   (asize (:pointer ft-size)))
 
+(export 'ft-new-size)
+
 (defcfun ("FT_Done_Size" ft-done-size) ft-error
   (size ft-size))
 
+(export 'ft-done-size)
+
 (defcfun ("FT_Activate_Size" ft-activate-size) ft-error
   (size ft-size))
+
+(export 'ft-activate-size)
