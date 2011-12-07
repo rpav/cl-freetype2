@@ -43,3 +43,7 @@
                     (asdf:component-pathname
                      (asdf:find-component :cl-freetype2 '("freetype2-ffi" "freetype2-grovel")))))
       cffi-grovel::*cc-flags*)
+
+(defmethod perform ((o test-op) (c (eql (find-system :cl-freetype2))))
+  (operate 'asdf:load-op :cl-freetype2-tests)
+  (operate 'asdf:test-op :cl-freetype2-tests))
