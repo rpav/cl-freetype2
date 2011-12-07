@@ -7,7 +7,10 @@
 
 (export 'ft-init-freetype)
 
+;; This takes an FT_Library, which is natively a pointer, but if
+;; we make it ft-library here, CFFI will expect a wrapper, which
+;; is undesirable in the finalizer.
 (defcfun ("FT_Done_FreeType" ft-done-freetype) ft-error
-  (library ft-library))
+  (library :pointer))
 
 (export 'ft-done-freetype)
