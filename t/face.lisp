@@ -7,7 +7,7 @@
   (asdf:component-pathname
    (asdf:find-component :cl-freetype2-tests '("TranscendsGames.otf"))))
 
-(deftest test-new-font ()
+(test (test-new-font :depends-on test-library-exists)
   "Make sure we can open the included font, and that it's nominally
 correct.  This is important setup for the rest of the suite."
 
@@ -16,7 +16,7 @@ correct.  This is important setup for the rest of the suite."
   (is (typep *face* 'ft-face))
   (is (string= "TranscendsGames" (ft-face-family-name *face*))))
 
-(deftest test-set-size ()
+(test (test-set-size :depends-on test-new-font)
   "Set the size to 24 points at 72 DPI, and check the size metrics are
 correct."
   (finishes
@@ -38,12 +38,12 @@ correct."
   (is (= (ft-size-metrics-max-advance (ft-size-metrics (ft-face-size *face*)))
          1280)))
   
-(deftest test-font-info ()
+(test (test-font-info :depends-on test-set-size)
   "Verify basic information about the face."
   (is (= (ft-face-num-faces *face*) 1))
   (is (= (ft-face-face-index *face*) 0))
-  (is (equal (ft-face-face-flags *face*)
-             '(:scalable :sfnt :horizontal :glyph-names)))
+  (is (equal (sort (ft-face-face-flags *face*) #'string<)
+             '(:GLYPH-NAMES :HORIZONTAL :SCALABLE :SFNT)))
   (is (string= (ft-face-style-name *face*) "Medium"))
   (is (= (ft-face-num-fixed-sizes *face*) 0))
   (is (= (ft-face-num-charmaps *face*) 4))
@@ -54,7 +54,7 @@ correct."
           :unicode))
   (is (not (fixed-face-p *face*))))
 
-(deftest test-font-chars ()
+(test (test-font-chars :depends-on test-set-size)
   "Verify some basic char/index information"
   (is (= (get-char-index *face* #\A) 34))
   (is (= (get-char-index *face* #\Null) 0))

@@ -2,7 +2,7 @@
 
  ;; Suite
 
-(defsuite freetype2-tests)
+(def-suite freetype2-tests)
 (in-suite freetype2-tests)
 
 

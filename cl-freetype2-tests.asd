@@ -1,7 +1,10 @@
+(cl:eval-when (:load-toplevel :execute)
+  (asdf:load-system :fiveam))
+
 (defsystem :cl-freetype2-tests
   :description "Test suite for cl-freetype2"
 
-  :depends-on (:cl-freetype2 :stefil)
+  :depends-on (:cl-freetype2 :fiveam)
 
   :pathname "t"
   :serial t
@@ -17,4 +20,4 @@
    (:static-file "TranscendsGames.README")))
 
 (defmethod perform ((o test-op) (c (eql (find-system :cl-freetype2-tests))))
-  (funcall (intern "FREETYPE2-TESTS" '#:freetype2-tests)))
+  (5am:run! (intern "FREETYPE2-TESTS" 'freetype2-tests)))
