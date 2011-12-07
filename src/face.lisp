@@ -11,7 +11,7 @@
 
 (defun check-font-file (library pathname)
   (with-foreign-object (c-open-args 'ft-open-args)
-    (with-foreign-string (cpathname pathname)
+    (with-foreign-string (cpathname (namestring pathname))
       (let ((args (%make-ft-open-args :ptr c-open-args)))
         (setf (ft-open-args-flags args) :pathname
               (ft-open-args-memory-base args) (null-pointer)
@@ -25,7 +25,7 @@
 
 (defun new-face (pathname &optional (index 0) (library *library*))
   (make-wrapper (face &face ft-face)
-    (ft-new-face library pathname index &face)
+    (ft-new-face library (namestring pathname) index &face)
     (ft-done-face (p* &face))))
 
 (export 'new-face)
