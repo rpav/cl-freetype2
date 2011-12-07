@@ -9,7 +9,7 @@
                 (ft-face-style-name object)
                 (pointer-address (fw-ptr object)))))
 
-(defun check-font-file (library pathname)
+(defun check-font-file (pathname)
   (with-foreign-object (c-open-args 'ft-open-args)
     (with-foreign-string (cpathname (namestring pathname))
       (let ((args (%make-ft-open-args :ptr c-open-args)))
@@ -21,7 +21,7 @@
               (ft-open-args-driver args) nil
               (ft-open-args-num-params args) 0
               (ft-open-args-params args) (null-pointer))
-        (ft-open-face library c-open-args -1 (null-pointer))))))
+        (ft-open-face *library* c-open-args -1 (null-pointer))))))
 
 (export 'check-font-file)
 
