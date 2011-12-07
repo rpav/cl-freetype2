@@ -25,7 +25,8 @@
                             c x (round (- max-ascender (ft-glyphslot-bitmap-top glyphslot)))
                             a k)
                  (ablit-from-nonzero array (bitmap-to-array (ft-glyphslot-bitmap glyphslot))
-                                     :x (round x) :y (round (- max-ascender (ft-glyphslot-bitmap-top glyphslot)))))
+                                     :x (round (max 0 (+ x (ft-glyphslot-bitmap-left glyphslot))))
+                                     :y (round (- max-ascender (ft-glyphslot-bitmap-top glyphslot)))))
                (incf x (+ a k)))
       array)))
     
