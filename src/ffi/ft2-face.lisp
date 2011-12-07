@@ -57,21 +57,21 @@
 
 (export 'ft-request-size)
 
-(defcfun ("FT_Set_Char_Size" set-char-size) ft-error
+(defcfun ("FT_Set_Char_Size" ft-set-char-size) ft-error
   (face ft-face)
   (char-width ft-f26dot6)
   (char-height ft-f26dot6)
   (horz-resolution ft-uint)
   (vert-resolution ft-uint))
 
-(export 'set-char-size)
+(export 'ft-set-char-size)
 
-(defcfun ("FT_Set_Pixel_Sizes" set-pixel-sizes) ft-error
+(defcfun ("FT_Set_Pixel_Sizes" ft-set-pixel-sizes) ft-error
   (face ft-face)
   (pixel-width ft-uint)
   (pixel-height ft-uint))
 
-(export 'set-pixel-size)
+(export 'ft-set-pixel-sizes)
 
 (defcfun ("FT_Load_Glyph" ft-load-glyph) ft-error
   (face ft-face)
