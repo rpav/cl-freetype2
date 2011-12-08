@@ -61,3 +61,5 @@
             :mono)
         (print-mono array)
         (print-greys array))))
+
+(export 'print-with-face)

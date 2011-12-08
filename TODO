@@ -53,6 +53,8 @@ TODO
        + get-fstype-flags
        
        - do-chars FACE &body BODY
+         (FT_Get_First_Char / FT_Get_Next_Char .. iterate all chars in
+         a face)
 
        - subglyph-info ?
        
@@ -62,8 +64,8 @@ TODO
        + render-glyph
        = bitmap-to-array: Would be nice to add pixel process/output function
      - Easy string walk/render
-       - do-string-render? -> BITMAP OFFSET ...
-       - do-string-offsets? -> CHAR KERN ...
+       - (do-string-render (FACE STRING BITMAP-VAR X-VAR Y-VAR
+       x do-string-offsets? -> CHAR KERN ...
    - etc
 
 

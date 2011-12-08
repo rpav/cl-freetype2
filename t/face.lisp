@@ -7,11 +7,14 @@
   (asdf:component-pathname
    (asdf:find-component :cl-freetype2-tests '("TranscendsGames.otf"))))
 
+(defvar *invalid-font-path* #P"")
+
 (test (test-new-font :depends-on test-library-exists)
   "Make sure we can open the included font, and that it's nominally
 correct.  This is important setup for the rest of the suite."
 
   (is (check-font-file *test-font-path*))
+  (is (null (check-font-file *invalid-font-path*)))
   (finishes (setf *face* (new-face *test-font-path*)))
   (is (typep *face* 'ft-face))
   (is (string= "TranscendsGames" (ft-face-family-name *face*))))

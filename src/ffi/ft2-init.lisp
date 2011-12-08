@@ -2,6 +2,14 @@
 
  ;; Initialization
 
+(defcfun ("FT_Library_Version" ft-library-version) :void
+  (library ft-library)
+  (amajor (:pointer ft-int))
+  (aminor (:pointer ft-int))
+  (apatch (:pointer ft-int)))
+
+(export 'ft-library-version)
+
 (defcfun ("FT_Init_FreeType" ft-init-freetype) ft-error
   (library (:pointer ft-library)))
 

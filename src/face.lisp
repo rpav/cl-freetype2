@@ -21,7 +21,7 @@
               (ft-open-args-driver args) nil
               (ft-open-args-num-params args) 0
               (ft-open-args-params args) (null-pointer))
-        (ft-open-face *library* c-open-args -1 (null-pointer))))))
+        (eq :ok (ft-open-face *library* c-open-args -1 (null-pointer)))))))
 
 (export 'check-font-file)
 
