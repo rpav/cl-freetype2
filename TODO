@@ -60,17 +60,22 @@ TODO
        
      - Variants?
      - Outlines
-     = Render
+     + Render
        + render-glyph
-       = bitmap-to-array: Would be nice to add pixel process/output function
-     - Easy string walk/render
-       - (do-string-render (FACE STRING BITMAP-VAR X-VAR Y-VAR
+       + bitmap-to-array
+     + Easy string walk/render
+       + (do-string-render (FACE STRING BITMAP-VAR X-VAR Y-VAR ..
        x do-string-offsets? -> CHAR KERN ...
+     = Testing
+       + Basic testing framework
+       - ablit
+       - do-string-render
+       - toy interface
    - etc
 
 
    - Cleanup:
-     - Lisp API calls behind FT-ERROR
+     = Lisp API calls behind FT-ERROR
      - Renaming:
        - fw-ptr
        - ft-error macro

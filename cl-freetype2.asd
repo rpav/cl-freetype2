@@ -34,6 +34,7 @@
                (:file "face")
                (:file "bitmap")
                (:file "glyph")
+               (:file "render")
                (:file "toy")))
 
 ;; Making an :around COMPILE-OP GROVEL-FILE is sortof the right way to do

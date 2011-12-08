@@ -111,6 +111,14 @@
 
 (export 'get-glyph-name)
 
+(defun get-loaded-advance (face vertical-p)
+  (let ((advance (ft-glyphslot-advance (ft-face-glyph face))))
+    (ft-26dot6-to-float (if vertical-p
+                            (ft-vector-y advance)
+                            (ft-vector-x advance)))))
+
+(export 'get-loaded-advance)
+
 (defun get-advance (face char-or-code &optional load-flags)
   (let ((gindex (get-char-index face char-or-code))
         (flags-value (convert-to-foreign load-flags 'ft-load-flags))
@@ -119,11 +127,9 @@
     (with-foreign-object (padvance 'ft-fixed)
       (if (eq :ok (ft-get-advance face gindex (logior flags-value fast-flag) padvance))
           (mem-ref padvance 'ft-fixed)
-          (let ((advance (ft-glyphslot-advance (ft-face-glyph face))))
+          (progn
             (load-glyph face gindex load-flags)
-            (ft-26dot6-to-float (if (logtest vert-flag flags-value)
-                                    (ft-vector-y advance)
-                                    (ft-vector-x advance))))))))
+            (get-loaded-advance face (logtest vert-flag flags-value)))))))
 
 (export 'get-advance)
 

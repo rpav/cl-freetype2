@@ -29,8 +29,8 @@
     (if (/= 0 (logand flags-value vert-flag))
         (if (ft-face-face-flags-test face '(:fixed-width))
             (* (length string)
-               (ft-size-metrics-x-ppem (ft-size-metrics (ft-face-size face))))
-            (reduce #'+ (get-string-advances face string load-flags)))
+               (ft-size-metrics-y-ppem (ft-size-metrics (ft-face-size face))))
+            (reduce #'+ (get-string-advances face string flags-value)))
         (+ (face-ascender-pixels face) (face-descender-pixels face)))))
 
  ;; Bitmap
@@ -93,11 +93,11 @@ arrays.  X and Y may be specified as a 2D offset into ARR1."
           for y1 from y below height1
           do (let ((x1 (+ (* y1 width1) xoff))
                    (x2 (* y2 width2)))
-                   (replace flat1 flat2
-                      :start1 x1
-                      :end1 (* (1+ y1) width1)
-                      :start2 x2
-                      :end2 (+ x2 width2)))))
+               (replace flat1 flat2
+                        :start1 x1
+                        :end1 (* (1+ y1) width1)
+                        :start2 x2
+                        :end2 (+ x2 width2)))))
   arr1)
 
 

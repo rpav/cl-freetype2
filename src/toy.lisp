@@ -2,34 +2,21 @@
 
  ;; Simple string-to-array
 
-(defun toy-string-to-array (face string &optional (load-flags '(:default)))
-  (let ((flags-value (convert-to-foreign load-flags 'ft-load-flags))
-        (vert-flag (convert-to-foreign '(:vertical-layout) 'ft-load-flags)))
-    (let ((array (make-array (list (round (string-pixel-height face string flags-value))
-                                   (round (string-pixel-width face string flags-value)))
-                             :element-type 'unsigned-byte))
-          (max-ascender (face-ascender-pixels face))
-          (advances (get-string-advances face string flags-value))
-          (kerning (if (= 0 (logand flags-value vert-flag))
-                       (get-string-kerning face string)
-                       nil)))
-      (loop with x = 0
-            for i from 0 below (length string)
-            as c = (elt string i)
-            as a = (elt advances i)
-            as k = (if kerning (elt kerning i) 0)
-            do
-               (load-char face c flags-value)
-               (let ((glyphslot (render-glyph face)))
-                 #+-(format t "~&Load ~A | Blit to ~A,~A | Advance X by ~A (kern ~A)~%"
-                            c x (round (- max-ascender (ft-glyphslot-bitmap-top glyphslot)))
-                            a k)
-                 (ablit-from-nonzero array (bitmap-to-array (ft-glyphslot-bitmap glyphslot))
-                                     :x (round (max 0 (+ x (ft-glyphslot-bitmap-left glyphslot))))
-                                     :y (round (- max-ascender (ft-glyphslot-bitmap-top glyphslot)))))
-               (incf x (+ a k)))
-      array)))
-    
+(defun toy-string-to-array (face string direction)
+  (let* ((flags (if (or (eq direction :up-down)
+                        (eq direction :down-up))
+                    '(:vertical-layout)
+                    '(:default)))
+         (height (round (string-pixel-height face string flags)))
+         (width (round (string-pixel-width face string flags)))
+         (array (make-array (list height width) :element-type 'unsigned-byte)))
+    (do-string-render (face string bitmap x y direction)
+      (case direction
+        (:left-right (ablit array bitmap :x x :y y))
+        (:right-left (ablit array bitmap :x (+ width x) :y y))
+        (:up-down    (ablit array bitmap :x x :y y))
+        (:down-up    (ablit array bitmap :x x :y (+ height y)))))
+    array))
 
  ;; Simple output
 
@@ -55,8 +42,8 @@
                         (princ "  ")))
         do (princ #\Newline)))
 
-(defun print-with-face (face string &optional (load-flags '(:default)))
-  (let ((array (toy-string-to-array face string load-flags)))
+(defun print-with-face (face string &optional (direction :left-right))
+  (let ((array (toy-string-to-array face string direction)))
     (if (eq (ft-bitmap-pixel-mode (ft-glyphslot-bitmap (ft-face-glyph face)))
             :mono)
         (print-mono array)
