@@ -43,6 +43,11 @@
         do (princ #\Newline)))
 
 (defun print-with-face (face string &optional (direction :left-right))
+  "This is a toy function to render STRING using FACE, optionally
+specifying DIRECTION as one of :left-right, :right-left, :up-down, or
+:down-up.  Some glyphs may cut off or wrap strangely depending on
+their metrics.  This is also not guaranteed to be a particularly
+efficient implementation."
   (let ((array (toy-string-to-array face string direction)))
     (if (eq (ft-bitmap-pixel-mode (ft-glyphslot-bitmap (ft-face-glyph face)))
             :mono)

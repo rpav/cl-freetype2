@@ -43,3 +43,5 @@
                   (case ,direction
                     (:left-right (incf ,x (+ ,advance ,kern)))
                     (:up-down (incf ,y ,advance))))))))
+
+(export 'do-string-render)

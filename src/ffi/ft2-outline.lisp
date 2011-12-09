@@ -1,4 +1,4 @@
-(in-package :freetype2)
+(in-package :freetype2-ffi)
 
  ;; C: Outlines
 

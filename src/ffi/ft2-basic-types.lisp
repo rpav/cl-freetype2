@@ -25,6 +25,9 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
  ;; Matrices and Vectors
 
 (defun make-matrix (xx xy yx yy)
+  "Make an FT-MATRIX given XX, XY, YX, and YY.  This may be passed directly
+to SET-TRANSFORM, and may be more efficient than converting from native
+forms."
   (let ((matrix (make-collected-foreign 'ft-matrix)))
     (setf (ft-matrix-xx matrix) xx)
     (setf (ft-matrix-xy matrix) xy)
@@ -35,6 +38,9 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
 (export 'make-matrix)
 
 (defun make-vector (x y)
+  "Make an FT-VECTOR given X and Y.  This may be passed directly
+to SET-TRANSFORM, and may be more efficient than converting from native
+forms."
   (let ((vector (make-collected-foreign 'ft-vector)))
     (setf (ft-vector-x vector) x)
     (setf (ft-vector-y vector) y)
@@ -43,6 +49,10 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
 (export 'make-vector)
 
 (defun convert-matrix (matrix)
+  "Convert MATRIX into an FT-MATRIX pointer.  If it is already an FT-MATRIX,
+simply return the pointer.  Otherwise it may be specified as a 2x2 array or
+flat 4-element array.  Specifying NIL will return (NULL-POINTER), which is
+also useful in some cases."
   (etypecase matrix
     (ft-matrix (& matrix))
     ((array * (2 2))
@@ -59,6 +69,10 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
 (export 'convert-matrix)
 
 (defun convert-vector (vector)
+  "Convert VECTOR into an FT-VECTOR pointer.  If VECTOR is already an
+FT-VECTOR, simply return the address.  Otherwise, VECTOR may be
+specified as a flat 2-dimensional array.  Specifying NIL will
+return (NULL-POINTER), which is also useful in some cases."
   (etypecase vector
     (ft-vector (& vector))
     ((or (simple-vector 2)
@@ -75,18 +89,22 @@ raise an error, and run CLEANUP.  Otherwise, take no further action."
                  ft-16dot16-to-float))
 
 (defun ft-26dot6-to-float (f)
+  "Convert an FT_26dot6 to a native float."
   (declare (type fixnum f))
   (coerce (/ f #x40) 'float))
 
 (export 'ft-26dot6-to-float)
 
 (defun ft-26dot6-to-int (f)
+  "Convert an FT_26dot6 to a native integer.  This may be more efficient than
+truncating the value returned by FT-26DOT6-TO-FLOAT."
   (declare (type fixnum f))
   (ash f -6))
 
 (export 'ft-26dot6-to-int)
 
 (defun ft-16dot16-to-float (f)
+  "Convert an FT_16dot16 to a native float."
   (declare (type fixnum f))
   (coerce (/ f #x10000) 'float))
 

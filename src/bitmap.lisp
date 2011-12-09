@@ -6,7 +6,7 @@
   (let ((flags-value (convert-to-foreign load-flags 'ft-load-flags))
         (vert-flag (convert-to-foreign '(:vertical-layout) 'ft-load-flags)))
     (if (= 0 (logand flags-value vert-flag))
-       (if (ft-face-face-flags-test face '(:fixed-width))
+       (if (fixed-face-p face)
            (* (length string)
               (ft-26dot6-to-int
                (ft-size-metrics-max-advance (ft-size-metrics (ft-face-size face)))))
@@ -15,10 +15,12 @@
        (ft-size-metrics-x-ppem (ft-size-metrics (ft-face-size face))))))
 
 (defun face-ascender-pixels (face)
+  "Return the max ascender for FACE, in pixels."
   (ft-26dot6-to-float
    (ft-size-metrics-ascender (ft-size-metrics (ft-face-size face)))))
 
 (defun face-descender-pixels (face)
+  "Return the max descender for FACE, in pixels."
   (ft-26dot6-to-float
    (- (ft-size-metrics-descender (ft-size-metrics (ft-face-size face))))))
 
@@ -27,7 +29,7 @@
   (let ((flags-value (convert-to-foreign load-flags 'ft-load-flags))
         (vert-flag (convert-to-foreign '(:vertical-layout) 'ft-load-flags)))
     (if (/= 0 (logand flags-value vert-flag))
-        (if (ft-face-face-flags-test face '(:fixed-width))
+        (if (fixed-face-p face)
             (* (length string)
                (ft-size-metrics-y-ppem (ft-size-metrics (ft-face-size face))))
             (reduce #'+ (get-string-advances face string flags-value)))
@@ -44,6 +46,12 @@
   (mem-ref row :unsigned-char n))
 
 (defun bitmap-to-array (bitmap)
+  "Convert BITMAP from internal FT_Bitmap's internal representation to
+a native array.  This is specified for a FT-BITMAP-PIXEL-FORMAT of :MONO,
+:GRAY, ;LCD, and :LCD-V.
+
+Note that for :LCD and :LCD-V, the result is a either 3*width or
+3*height, respectively.  This may change in the future."
   (let ((buffer (ft-bitmap-buffer bitmap))
         (rows (ft-bitmap-rows bitmap))
         (width (ft-bitmap-width bitmap))
@@ -63,6 +71,8 @@
             do (loop for j from 0 below width
                      do (setf (aref array i j) (funcall pixel-fn ptr j)))
             finally (return (values array format))))))
+
+(export 'bitmap-to-array)
 
  ;; ABLIT
 
