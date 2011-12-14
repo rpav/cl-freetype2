@@ -362,6 +362,6 @@
      (bitmap ft-bitmap)))
 
 (defcwrap (ft-outlineglyphrec ft-outlineglyph)
-    ((root ft-outlineglyph)
+    ((root ft-glyphrec)
      (outline ft-outline)))
 
