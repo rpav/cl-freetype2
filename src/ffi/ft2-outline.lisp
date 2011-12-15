@@ -12,7 +12,7 @@
 
 (defcfun ("FT_Outline_Done" ft-outline-done) ft-error
   (library ft-library)
-  (outline (:pointer ft-outline)))
+  (outline :pointer))
 
 (export 'ft-outline-done)
 

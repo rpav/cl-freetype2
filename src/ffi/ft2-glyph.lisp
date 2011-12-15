@@ -56,6 +56,6 @@
 (export 'ft-glyph-to-bitmap)
 
 (defcfun ("FT_Done_Glyph" ft-done-glyph) :void
-  (glyph ft-glyph))
+  (glyph :pointer))
 
 (export 'ft-done-glyph)

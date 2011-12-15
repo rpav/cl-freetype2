@@ -9,7 +9,7 @@
 (export 'ft-new-size)
 
 (defcfun ("FT_Done_Size" ft-done-size) ft-error
-  (size ft-size))
+  (size :pointer))
 
 (export 'ft-done-size)
 
