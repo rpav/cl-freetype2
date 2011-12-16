@@ -15,6 +15,7 @@
    (:file "library")
    (:file "face")
    (:file "glyph")
+   (:file "outline")
 
    (:static-file "TranscendsGames.otf")
    (:static-file "TranscendsGames.README")))
