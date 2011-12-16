@@ -1,14 +1,38 @@
 (in-package :freetype2)
 
+(defun outline-copy (library outline)
+  "Make a copy of OUTLINE.  Make sure LIBRARY is going to be valid for
+the life of the resulting copy.  This means that if you got the value
+from an FT_Face, FT_Glyph, or similar parent, THAT PARENT must be
+valid, _along with_ the library itself, or use EXTRACT-LIBRARY to get
+a fresh handle."
+  (let* ((num-points (ft-outline-n-points outline))
+         (num-contours (ft-outline-n-contours outline))
+         (wrapper
+           (make-wrapper (new-outline &new-outline ft-outline)
+             (ft-outline-new library num-points num-contours &new-outline)
+             (progn
+               (format t "~&library: ~A~%" library)
+               (ft-outline-done library &new-outline)))))
+    (ft-error (ft-outline-copy (fw-ptr outline) (fw-ptr wrapper)))
+    wrapper))
+
+(export 'outline-copy)
+
 (defun get-outline (face-or-glyphslot &optional char-or-code)
-  "Retrieve an outline from FACE-OR-GLYPHSLOT.  If CHAR-OR-CODE is not nil,
-it will be loaded, and its outline retrieved.  In this case,
-FACE-OR-GLYPHSLOT must be an FT-FACE."
+  "Retrieve an outline *copy* from FACE-OR-GLYPHSLOT.  If CHAR-OR-CODE is not
+nil, it will be loaded, and its outline retrieved.  In this case,
+FACE-OR-GLYPHSLOT must be an FT-FACE.
+
+If you wish to retrieve the original outline, you may use GET-GLYPH and
+FT-OUTLINEGLYPH-OUTLINE, but you *must* retain the glyph for the outline
+to remain valid."
   (when char-or-code
     (load-char face-or-glyphslot char-or-code '(:no-bitmap)))
   (let ((glyph (get-glyph face-or-glyphslot)))
     (if (typep glyph 'ft-outlineglyph)
-        (ft-outlineglyph-outline glyph))))
+        (outline-copy (extract-freetype (ft-glyph-library glyph))
+                      (ft-outlineglyph-outline glyph)))))
 
 (export 'get-outline)
 
