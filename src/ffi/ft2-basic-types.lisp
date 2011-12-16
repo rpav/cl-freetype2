@@ -6,7 +6,7 @@
   (let* ((ptr (funcall alloc-fn (foreign-type-size type) 1))
          (wrapper (make-instance type)))
     (setf (fw-ptr wrapper) ptr)
-    (tg:finalize ptr (lambda () (funcall free-fn ptr)))
+    (freetype2-types:finalize wrapper (lambda () (funcall free-fn ptr)))
     wrapper))
 
 (export 'make-collected-foreign)
@@ -109,3 +109,14 @@ truncating the value returned by FT-26DOT6-TO-FLOAT."
   (coerce (/ f #x10000) 'float))
 
 (export 'ft-16dot16-to-float)
+
+ ;; Display
+
+(defmethod print-object ((object ft-bbox) stream)
+  (print-unreadable-object (object stream :type t :identity nil)
+    (format stream "(~A,~A)-(~A,~A) {#x~8,'0X}"
+            (ft-bbox-xmin object)
+            (ft-bbox-ymin object)
+            (ft-bbox-xmax object)
+            (ft-bbox-ymax object)
+            (pointer-address (fw-ptr object)))))
