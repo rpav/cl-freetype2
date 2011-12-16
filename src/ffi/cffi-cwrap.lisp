@@ -13,11 +13,36 @@
 
 (export 'libc-free)
 
+(declaim (inline finalize))
+
+#+(not ccl)
+(defun finalize (object function)
+  (tg:finalize object function))
+
+#+(or ccl)
+(progn
+  (defvar *strong-finalizers* (make-hash-table))
+
+  (defun finalize (object function)
+    (setf (gethash function *strong-finalizers*) t)
+    (tg:finalize object (lambda ()
+                          (funcall function)
+                          (remhash function *strong-finalizers*)))
+    object))
+
+(export 'finalize)
+
  ;; Wrapper Struct
 
 (declaim (inline fw-ptr))
+
+#+(or ccl ecl allegro)
 (defstruct (foreign-wrapper (:conc-name #:fw-))
-  (ptr (cffi-sys:null-pointer) :type cffi-sys:foreign-pointer))
+  (ptr #.(cffi:null-pointer) :type #.(type-of (cffi:null-pointer))))
+
+#+(or cmucl sbcl clisp)
+(defstruct (foreign-wrapper (:conc-name #:fw-))
+  (ptr (cffi:null-pointer) :type #.(type-of (cffi:null-pointer))))
 
 (export 'fw-ptr)
 
@@ -229,10 +254,11 @@
             (,handle-var (,make-name :ptr ,ptr-var))
             (,err ,init-form))
             (if (eq ,err :ok)
-                (tg:finalize ,handle-var (lambda ()
-                                           #+-(format t "~A ~A~%" ',free-form ,ptr-var)
-                                           ,free-form
-                                           (libc-free ,ptr-var)))
+                (freetype2-types::finalize ,handle-var
+                             (lambda ()
+                               #+-(format t "~A ~A~%" ',free-form ,ptr-var)
+                               ,free-form
+                               (libc-free ,ptr-var)))
                 (progn
                   (libc-free ,ptr-var)
                   (setf (fw-ptr ,handle-var) (null-pointer))
