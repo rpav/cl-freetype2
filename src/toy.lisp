@@ -9,7 +9,8 @@
                     '(:default)))
          (height (round (string-pixel-height face string flags)))
          (width (round (string-pixel-width face string flags)))
-         (array (make-array (list height width) :element-type 'unsigned-byte)))
+         (array (make-array (list height width) :element-type 'unsigned-byte
+                            :initial-element 0)))
     (do-string-render (face string bitmap x y direction)
       (case direction
         (:left-right (ablit array bitmap :x x :y y))
