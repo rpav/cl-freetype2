@@ -44,5 +44,18 @@ library version differs from what cl-freetype2 was compiled with."
 
 (export 'make-freetype)
 
+(defun extract-freetype (library)
+  "When retrieving an FT-LIBRARY handle from an object, using the resulting
+wrapper is unsafe because it's dependent on the object.  Instead, use
+EXTRACT-FREETYPE to create a separate version.  Note that this does NOT
+make it safe to discard the original handle, only extract references to
+it."
+  (let ((new-library (make-collected-foreign 'ft-library)))
+    (setf (mem-ref (fw-ptr new-library) :pointer)
+          (w* library))
+    new-library))
+
+(export 'extract-freetype)
+
 (setf *library* (make-freetype))
 (export '*library*)
