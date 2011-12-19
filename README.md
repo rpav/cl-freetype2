@@ -6,6 +6,20 @@ geared toward both using Freetype directly by providing a simplified
 API, as well as providing access to the underlying C structures and
 functions for use with other libraries which may also use Freetype.
 
+Platform
+--------
+
+Confirmed working:
+
+* SBCL
+* Clozure
+* CLISP (with CVS libffcall only, otherwise callbacks don't work)
+
+Confirmed not working:
+
+* ECL (CFFI doesn't load)
+* ABCL (CFFI loads, but can't grovel?)
+
 
 Overview
 --------

@@ -16,9 +16,11 @@
    (:file "face")
    (:file "glyph")
    (:file "outline")
+   (:file "toy")
 
    (:static-file "TranscendsGames.otf")
    (:static-file "TranscendsGames.README")))
 
 (defmethod perform ((o test-op) (c (eql (find-system :cl-freetype2-tests))))
-  (5am:run! (intern "FREETYPE2-TESTS" 'freetype2-tests)))
+  (let ((5am:*test-dribble* *error-output*))
+    (5am:run! (intern "FREETYPE2-TESTS" 'freetype2-tests))))
