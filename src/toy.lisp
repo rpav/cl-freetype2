@@ -10,13 +10,14 @@
          (height (round (string-pixel-height face string flags)))
          (width (round (string-pixel-width face string flags)))
          (array (make-array (list height width) :element-type 'unsigned-byte
-                            :initial-element 0)))
+                                                :initial-element 0)))
     (do-string-render (face string bitmap x y direction)
-      (case direction
-        (:left-right (ablit array bitmap :x x :y y))
-        (:right-left (ablit array bitmap :x (+ width x) :y y))
-        (:up-down    (ablit array bitmap :x x :y y))
-        (:down-up    (ablit array bitmap :x x :y (+ height y)))))
+      (let ((barray (bitmap-to-array bitmap)))
+        (case direction
+          (:left-right (ablit array barray :x x :y y))
+          (:right-left (ablit array barray :x (+ width x) :y y))
+          (:up-down    (ablit array barray :x x :y y))
+          (:down-up    (ablit array barray :x x :y (+ height y))))))
     array))
 
  ;; Simple output
@@ -44,9 +45,9 @@
         do (princ #\Newline)))
 
 (defun print-with-face (face string &optional (direction :left-right))
-  "This is a toy function to render STRING using FACE, optionally
-specifying DIRECTION as one of :left-right, :right-left, :up-down, or
-:down-up.  Some glyphs may cut off or wrap strangely depending on
+  "This is a toy function to render `STRING` using `FACE`, optionally
+specifying `DIRECTION` as one of `:left-right`, `:right-left`, `:up-down`, or
+`:down-up`.  Some glyphs may cut off or wrap strangely depending on
 their metrics.  This is also not guaranteed to be a particularly
 efficient implementation."
   (let ((array (toy-string-to-array face string direction)))

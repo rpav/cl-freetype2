@@ -3,8 +3,8 @@
  ;; Glyph Handling
 
 (defun render-glyph (face-or-glyphslot &optional (render-mode :normal))
-  "Render the loaded glyph in FACE-OR-GLYPHSLOT, optionally specifying
-RENDER-MODE.  Return the rendered glyphslot."
+  "Render the loaded glyph in `FACE-OR-GLYPHSLOT`, optionally specifying
+`RENDER-MODE`.  Return the rendered glyphslot."
   (etypecase face-or-glyphslot
     (ft-glyphslot
      (ft-error (ft-render-glyph face-or-glyphslot render-mode))
@@ -16,6 +16,8 @@ RENDER-MODE.  Return the rendered glyphslot."
 (export 'render-glyph)
 
 (defun get-glyph (face-or-glyphslot)
+  "=> GLYPH
+Get the `FT_Glyph` from `FACE-OR-GLYPHSLOT`."
   (let ((glyphslot (etypecase face-or-glyphslot
                      (ft-glyphslot face-or-glyphslot)
                      (ft-face (ft-face-glyph face-or-glyphslot)))))

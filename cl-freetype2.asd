@@ -3,6 +3,8 @@
 
 (defsystem :cl-freetype2
   :description "Wrapper for the Freetype2 library"
+  :author "Ryan Pavlik <rpavlik@gmail.com>"
+  :license "BSD, LLGPL"
 
   :depends-on (:cffi :trivial-garbage)
   :serial t
@@ -49,3 +51,18 @@
 (defmethod perform ((o test-op) (c (eql (find-system :cl-freetype2))))
   (operate 'asdf:load-op :cl-freetype2-tests)
   (operate 'asdf:test-op :cl-freetype2-tests))
+
+
+(defsystem :cl-freetype2-doc
+  :description "Documentation generation for cl-freetype2"
+  :depends-on (:cl-freetype2 :cl-who :cl-markdown)
+
+  :pathname "doc"
+  :serial t
+  :components ((:file "gendoc")
+               (:file "ft2docs")
+               (:static-file "ft2docs.css")))
+
+(defmethod perform :after ((o load-op) (c (eql (find-system :cl-freetype2-doc))))
+  (let ((fn (find-symbol "GENERATE-DOCS" (find-package :freetype2))))
+    (funcall fn)))

@@ -10,7 +10,8 @@
                 (pointer-address (fw-ptr object)))))
 
 (defun check-font-file (pathname &optional (library *library*))
-  "Validate PATHNAME is a supported format by calling FT_Open_Face
+  "=> boolean
+Verify `PATHNAME` is a supported format by calling `FT_Open_Face`
 with a negative face index."
   (with-foreign-object (c-open-args 'ft-open-args)
     (with-foreign-string (cpathname (namestring pathname))
@@ -28,7 +29,7 @@ with a negative face index."
 (export 'check-font-file)
 
 (defun new-face (pathname &optional (index 0) (library *library*))
-  "Make a new FT-FACE from PATHNAME, optionally specifying INDEX as the
+  "Make a new `FT-FACE` from `PATHNAME`, optionally specifying `INDEX` as the
 face index."
   (make-wrapper (face &face ft-face)
     (ft-new-face library (namestring pathname) index &face)
@@ -37,30 +38,32 @@ face index."
 (export 'new-face)
 
 (defun fixed-face-p (face)
-  "Check if FACE is fixed-width according to its flags"
+  "=> boolean
+Check if `FACE` is fixed-width according to its flags"
   (ft-face-face-flags-test face '(:fixed-width)))
 
 (export 'fixed-face-p)
 
 (defun set-char-size (face char-width char-height horz-resolution vert-resolution)
-  "Set the size for FACE to CHAR-WIDTH and CHAR-HEIGHT, specified in 1/64
-*points*.  HORZ-RESOLUTION and VERT-RESOLUTION specify the DPI.
+  "Set the size for `FACE` to `CHAR-WIDTH` and `CHAR-HEIGHT`, specified in 1/64
+**points**.  `HORZ-RESOLUTION` and `VERT-RESOLUTION` specify the DPI.
 
-If either CHAR-WIDTH or CHAR-HEIGHT are 0, the other value is used."
+If either `CHAR-WIDTH` or `CHAR-HEIGHT` are 0, the other value is used."
   (ft-error (ft-set-char-size face char-width char-height
                               horz-resolution vert-resolution)))
 
 (export 'set-char-size)
 
 (defun set-pixel-sizes (face pixel-width pixel-height)
-  "Set the size for FACE in *pixels* to PIXEL-WIDTH and PIXEL-HEIGHT.
+  "Set the size for `FACE` in **pixels** to `PIXEL-WIDTH` and `PIXEL-HEIGHT`.
 Especially useful for fixed-size bitmap fonts."
   (ft-error (ft-set-pixel-sizes face pixel-width pixel-height)))
 
 (export 'set-pixel-sizes)
 
 (defun get-char-index (face char-or-code)
-  "Get the index in FACE for CHAR-OR-CODE, which may be either a character,
+  "=> index
+Get the index in `FACE` for `CHAR-OR-CODE`, which may be either a character,
 or an integer code."
   (etypecase char-or-code
     (character (ft-get-char-index face (char-code char-or-code)))
@@ -69,24 +72,25 @@ or an integer code."
 (export 'get-char-index)
 
 (defun load-glyph (face glyph-index &optional (load-flags :default))
-  "Load a glyph in FACE for GLYPH-INDEX, optionally specifying LOAD-FLAGS.
-Note that this requires a *glyph index*.  To more directly load a character
-or code, use LOAD-CHAR."
+  "Load a glyph in `FACE` for `GLYPH-INDEX`, optionally specifying `LOAD-FLAGS`.
+Note that this requires a *glyph index*.  To directly load a character
+or code, use [`LOAD-CHAR`](#LOAD-CHAR)."
   (ft-error (ft-load-glyph face glyph-index load-flags)))
 
 (export 'load-glyph)
 
 (defun load-char (face char-or-code &optional (load-flags :default))
-  "Load a glyph in FACE for CHAR-OR-CODE, optionally specifying LOAD-FLAGS.
-CHAR-OR-CODE may be specified as per GET-CHAR-INDEX."
+  "Load a glyph in `FACE` for `CHAR-OR-CODE`, optionally specifying `LOAD-FLAGS`.
+`CHAR-OR-CODE` may be specified as per [`GET-CHAR-INDEX`](#GET-CHAR-INDEX)."
   (load-glyph face (get-char-index face char-or-code) load-flags))
 
 (export 'load-char)
 
 (defun set-transform (face matrix delta)
-  "Set the tranformation matrix for FACE to MATRIX, a 2x2
-transformation matrix specified as per CONVERT-MATRIX, and DELTA,
-a translation vector specified as per CONVERT-VECTOR."
+  "Set the tranformation matrix for `FACE` to `MATRIX`, a 2x2
+transformation matrix specified as per [`CONVERT-MATRIX`](cl-freetype2-types.html#CONVERT-MATRIX),
+and `DELTA`, a translation vector specified as per
+[`CONVERT-VECTOR`](cl-freetype2-types.html#CONVERT-VECTOR)."
   (let ((ft-matrix (convert-matrix matrix))
         (ft-vector (convert-vector delta)))
     (ft-set-transform face ft-matrix ft-vector)))
@@ -94,11 +98,12 @@ a translation vector specified as per CONVERT-VECTOR."
 (export 'set-transform)
 
 (defun get-kerning (face char1 char2 &optional mode)
-  "Get the kerning between CHAR1 and CHAR2 for FACE, optionally specifying
-the kerning mode MODE.
+  "=> kerning-float
+Get the kerning between `CHAR1` and `CHAR2` for `FACE`, optionally specifying
+the kerning mode `MODE`.
 
-By default this returns the kerning in *pixels*.  If MODE is specified,
-an untranslated value is returned as per FT_Get_Kerning with the given
+By default this returns the kerning in *pixels*.  If `MODE` is specified,
+an untranslated value is returned as per `FT`_Get_Kerning with the given
 flags."
   (let ((index1 (get-char-index face char1))
         (index2 (get-char-index face char2)))
@@ -112,9 +117,10 @@ flags."
 (export 'get-kerning)
 
 (defun get-string-kerning (face string &optional mode)
-  "Return an array of kerning values for each pair of characters in STRING,
-for FACE, optionally specifying the kerning mode MODE.  The results are as
-per GET-KERNING."
+  "=> ARRAY
+Return an array of kerning values for each pair of characters in `STRING`,
+for `FACE`, optionally specifying the kerning mode `MODE`.  The results are as
+per `GET-KERNING`."
   (let ((kern (make-array (length string) :initial-element 0)))
     (loop for i from 0 below (1- (length string))
           as c1 = (aref string i)
@@ -126,8 +132,9 @@ per GET-KERNING."
 (export 'get-string-kerning)
 
 (defun get-track-kerning (face point-size degree)
-  "Return the track kerning at POINT-SIZE for FACE given DEGREE.  See
-the documentation for FT_Get_Track_Kerning.  It seems that only a few
+  "=> ARRAY
+Return the track kerning at `POINT-SIZE` for `FACE` given `DEGREE`.  See
+the documentation for `FT_Get_Track_Kerning`.  It seems that only a few
 Type 1 fonts use this."
   (with-foreign-object (akerning 'ft-fixed)
     (setf (mem-ref akerning 'ft-fixed) 0)
@@ -137,7 +144,8 @@ Type 1 fonts use this."
 (export 'get-track-kerning)
 
 (defun get-glyph-name (face char-or-code)
-  "Get the symbolic name and length in FACE for CHAR-OR-CODE."
+  "=> name-string
+Get the symbolic name and length in `FACE` for `CHAR-OR-CODE`."
   (with-foreign-pointer (buffer 64 len)
     (ft-error (ft-get-glyph-name face (get-char-index face char-or-code)
                                  buffer len))
@@ -146,8 +154,9 @@ Type 1 fonts use this."
 (export 'get-glyph-name)
 
 (defun get-loaded-advance (face vertical-p)
-  "Get the glyph advance value in FACE for the already-loaded glyph.  If
-VERTICAL-P is true, get the vertical advance, otherwise, get the
+  "=> advance-float
+Get the glyph advance value in `FACE` for the already-loaded glyph.  If
+`VERTICAL-P` is true, get the vertical advance, otherwise, get the
 horizontal advance."
   (let ((advance (ft-glyphslot-advance (ft-face-glyph face))))
     (ft-26dot6-to-float (if vertical-p
@@ -157,13 +166,14 @@ horizontal advance."
 (export 'get-loaded-advance)
 
 (defun get-advance (face char-or-code &optional load-flags)
-  "Get the advance in FACE for CHAR-OR-CODE, optionally specifying LOAD-FLAGS.
+  "=> advance-float
+Get the advance in `FACE` for `CHAR-OR-CODE`, optionally specifying `LOAD-FLAGS`.
 
-This attempts to use FT_Get_Advance to efficiently retrieve an advance.  In
-this case, LOAD-FLAGS are not used.
+This attempts to use `FT_Get_Advance` to efficiently retrieve an advance.  In
+this case, `LOAD-FLAGS` are not used.
 
 Failing this, this will load the glyph and retrieve the advance using
-GET-LOADED-ADVANCE, specifying VERTICAL-P by whether the :vertical-layout
+`GET-LOADED-ADVANCE`, specifying `VERTICAL-P` by whether the :vertical-layout
 face-flag is set.  This is generally slower, but many fonts do not have a
 facility for fast advance retrieval."
   (let ((gindex (get-char-index face char-or-code))
@@ -180,8 +190,9 @@ facility for fast advance retrieval."
 (export 'get-advance)
 
 (defun get-string-advances (face string &optional load-flags)
-  "Get an array of advances for the string STRING for face FACE, optionally
-specifying LOAD-FLAGS."
+  "=> ARRAY
+Get an array of advances for the string `STRING` for face `FACE`, optionally
+specifying `LOAD-FLAGS`."
   (let ((advance (make-array (length string) :element-type 'float
                                              :initial-element 0.0)))
     (loop for c across string

@@ -6,7 +6,8 @@ No locking or other precautions are taken, so multithreaded code should
 take care to block or use separate instances.")
 
 (defun freetype-version (&optional (library *library*))
-  "Return the version of the library according to FT_Library_Version.
+  "=> version-major, version-minor, version-patch
+Return the version of the library according to `FT_Library_Version`.
 This may differ from the constants acquired at compile-time."
   (if (null-pointer-p (fw-ptr library))
       (values 0 0 0)
@@ -27,7 +28,8 @@ This may differ from the constants acquired at compile-time."
               (pointer-address (fw-ptr object))))))
 
 (defun make-freetype ()
-  "Create and initialize an ft-library handle.  This will warn if the
+  "=> LIBRARY
+Create and initialize an `FT_Library` handle.  This will warn if the
 library version differs from what cl-freetype2 was compiled with."
   (make-wrapper (library &library ft-library)
     (progn
@@ -45,9 +47,10 @@ library version differs from what cl-freetype2 was compiled with."
 (export 'make-freetype)
 
 (defun extract-freetype (library)
-  "When retrieving an FT-LIBRARY handle from an object, using the resulting
+  "=> LIBRARY
+When retrieving an `FT-LIBRARY` handle from an object, using the resulting
 wrapper is unsafe because it's dependent on the object.  Instead, use
-EXTRACT-FREETYPE to create a separate version.  Note that this does NOT
+`EXTRACT-FREETYPE` to create a separate version.  Note that this does **not**
 make it safe to discard the original handle, only extract references to
 it."
   (let ((new-library (make-collected-foreign 'ft-library)))

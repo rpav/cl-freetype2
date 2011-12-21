@@ -25,7 +25,7 @@ TODO
        - new-memory-face
        + check-font-file: use FT_Open_Face with negative face index for
          quick validity check
-     = Char/Glyph
+     + Char/Glyph
        + select-charmap
        x set-charmap
        x get-charmap-index
@@ -34,7 +34,7 @@ TODO
        + get-char-index
        + load-glyph
        + load-char
-     = Transformation
+     + Transformation
        + set-transform
        + Sizes!
      = Query
@@ -57,7 +57,6 @@ TODO
          a face)
 
        - subglyph-info ?
-       
      - Variants?
      + Outlines
      + Render
@@ -68,11 +67,12 @@ TODO
        x do-string-offsets? -> CHAR KERN ...
      = Testing
        + Basic testing framework
-       - ablit
-       - do-string-render
-       - toy interface
+       x ablit
+       + do-string-render
+       + toy interface
      - Basic integration
        - zpng
+     - Documentation
    - etc
 
 

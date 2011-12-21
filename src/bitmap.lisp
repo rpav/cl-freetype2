@@ -46,12 +46,14 @@
   (mem-ref row :unsigned-char n))
 
 (defun bitmap-to-array (bitmap)
-  "Convert BITMAP from internal FT_Bitmap's internal representation to
-a native array.  This is specified for a FT-BITMAP-PIXEL-FORMAT of :MONO,
-:GRAY, ;LCD, and :LCD-V.
+  "=> ARRAY
 
-Note that for :LCD and :LCD-V, the result is a either 3*width or
-3*height, respectively.  This may change in the future."
+Convert `BITMAP` from internal `FT_Bitmap`'s internal representation to
+a native array.  This is specified for a `FT-BITMAP-PIXEL-FORMAT` of `:MONO`,
+`:GRAY`, `:LCD`, and `:LCD-V`.
+
+Note that for :LCD and :LCD-V, the result is a either 3\\*width or
+3\\*height, respectively.  This may change in the future."
   (let ((buffer (ft-bitmap-buffer bitmap))
         (rows (ft-bitmap-rows bitmap))
         (width (ft-bitmap-width bitmap))

@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<head>
+  <title>cl-freetype2
+  </title>
+  <link rel='stylesheet' type='text/css' href='ft2docs.css' />
+</head>
+<html><h1>cl-freetype2 </h1><p>This is a general Freetype 2 wrapper for Common Lisp using CFFI.  It's geared toward both using Freetype directly by providing a simplified API, as well as providing access to the underlying C structures and functions for use with other libraries which may also use Freetype. </p><a name='TOC' id='TOC'></a> <h2>Contents </h2><ul><li><a href="#PLATFORM">Platform</a></li><li><a href="#OVERVIEW">Overview</a></li><li><a href="#REFERENCE-FREETYPE2">Reference</a></li><li><a href="#EXAMPLES">Examples</a><ul><li><a href="#EXAMPLES-RENDERING">Rendering</a></li><li><a href="#EXAMPLES-METRICS">Loading and Metrics</a></li><li><a href="#EXAMPLES-OUTLINES">Outlines</a></li></ul></li><li><a href="#INTERNALS">Internals</a><ul><li><a href="#TYPES">Types</a></li><li><a href="#TESTING">Testing</a></li><li><a href="#PORTING">Porting</a></li></ul></li><li><a href="#ABOUT">About</a></li></ul><a name='PLATFORM' id='PLATFORM'></a> <h2>Platform </h2><p>Confirmed working: </p><ul><li>SBCL</li><li>Clozure</li><li>CLISP (with CVS libffcall only, otherwise callbacks segfault)</li></ul><p>Confirmed not working: </p><ul><li>ECL (CFFI doesn't load)</li><li>ABCL (CFFI loads, but can't grovel?)</li></ul><a name='OVERVIEW' id='OVERVIEW'></a> <h2>Overview </h2><p>The main functionality of cl-freetype2 is divided into three packages: </p><ul><li><p><code>freetype2</code> (alias <code>ft2</code>) contains the main API intended for user   consumption.  Some care needs to be taken to not discard certain   references, but this should for the most part be fairly idiomatic.   <a href="#REFERENCE-FREETYPE2">See the reference</a>. </p></li><li><p><code>freetype2-types</code> contains C type definitions and accessors.   Structure contents are not automatically converted, but accessors   convert between foreign and native types on demand.  Types obtained   from <code>freetype2:</code> functions are automatically collected, but   references obtained from structure slots do <em>not</em>.   <a href="cl-freetype2-types.html#REFERENCE-CL-FREETYPE2-TYPES">See the reference</a>. </p></li><li><p><code>freetype2-ffi</code> contains C API definitions.  It is generally not   necessary to call these, but it may be to effect some special   functionality or integrate with other C libraries which use   FreeType.   <a href="cl-freetype2-ffi.html#REFERENCE-CL-FREETYPE2-FFI">See the reference</a>. </p></li></ul><a name='TYPES' id='TYPES'></a> <a name='EXAMPLES' id='EXAMPLES'></a> <h1>Example </h1><a name='EXAMPLES-RENDERING' id='EXAMPLES-RENDERING'></a> <h2>Rendering </h2><p>An example using the toy interface: </p><pre><code>(defparameter *face* (new-face "/usr/share/fonts/corefonts/times.ttf"))  
+ 
+;; Set the size to 24 points and 72 DPI  
+(set-char-size *face* (* 24 64) 0 72 72)  
+ 
+;; Trivial output:  
+(print-with-face *face* "Hello")  
+ 
+;; Output (if this doesn't display, make sure your encoding is  
+;; set to UTF-8, and that your "fixed-width" font is  
+;; fixed-enough, or you'll just get a jumble):  
+                                                        ▒▒▓▓██      ▒▒▓▓██                             
+████████████      ████████████                        ████████    ████████                             
+  ▒▒████░░          ▒▒████░░                              ████        ████                             
+    ████              ████                                ████        ████                             
+    ████              ████                                ████        ████                             
+    ████              ████                                ████        ████                             
+    ████              ████            ░░██████▓▓          ████        ████          ░░▓▓████▓▓░░       
+    ████              ████          ▒▒██░░  ░░████        ████        ████        ░░██░░    ▓▓██▒▒     
+    ██████████████████████        ░░██▒▒      ░░██▒▒      ████        ████        ██▒▒        ████░░   
+    ████              ████        ▓▓██          ████      ████        ████      ▒▒██          ▒▒██▓▓   
+    ████              ████        ██████████████████      ████        ████      ████            ████   
+    ████              ████        ████                    ████        ████      ████            ████   
+    ████              ████        ████░░          ░░      ████        ████      ████░░          ████   
+    ████              ████        ▓▓██▓▓        ░░▓▓      ████        ████      ▓▓██▒▒          ██▒▒   
+    ████              ████        ░░████▓▓    ░░██░░      ████        ████      ░░████        ░░██     
+  ░░████░░          ░░████░░        ▓▓██████████▒▒      ▒▒████▒▒    ▒▒████▒▒      ▒▒████    ░░██░░     
+████████████      ████████████        ▒▒██████░░      ████████████████████████      ░░▓▓████▓▓░░       
+</code></pre><p>The above is a minimally-required set of calls to render some text. The <code>PRINT-WITH-FACE</code> function is a toy, but a working toy, useful to experiment with other API calls and see a result.  Behind the scenes, <code>PRINT-WITH-FACE</code> is using the <code>DO-STRING-RENDER</code> macro, which is likely of more use in a "real" application: </p><pre><code>(let (metrics)  
+  (do-string-render (*face* "Hello" bitmap x y)  
+    (push (list x y) metrics))  
+  (print (nreverse metrics)))  
+ 
+;; Output: ((1 5) (18 10) (28 4) (34 4) (41 10)) </code></pre><p>The <code>DO-STRING-RENDER</code> macro uses a generalized algorithm for computing the coordinates for each glyph, taking into account the offsets and kerning.  The coordinate system here assumes (0,0) is upper-left, and the X,Y pair is offsets from the origin to the <em>upper-left</em> <em>corner</em> of <code>BITMAP</code>.  This is a very common screen coordinate system, and easily translated into zero-baseline or similar. </p><p>Other directional layouts are supported, but the coordinate system does not change: </p><pre><code>(let (metrics)  
+  (do-string-render (*face* "Hello" bitmap x y)  
+    (push (list x y) metrics))  
+  (print (nreverse metrics)))  
+ 
+;; Output: ((-16 5) (-27 10) (-34 4) (-40 4) (-51 10)) </code></pre><p>In this case, glyphs are rendered right-to-left, into negative <code>X</code>, but coordinates are still to the upper-left corner of the glyph, from the origin.  This simplifies multidirectional rendering considerably. </p><p><strong>Note:</strong> While cl-freetype2 will render in any direction using the proper metrics, it does <em>not</em> currently support <code>GPOS</code>/<code>GSUB</code>, <code>mort</code>/<code>morx</code>/<code>lcar</code> or similar tables and does not do ligature substitution, because FreeType 2 does not provide access to this information beyond a <code>FT_Byte*</code> pointer.  I hope to write a parser at some point.  However until then, there's no real support for languages which require these tables to render properly. </p><p>We have not discussed <code>BITMAP</code>, which is an untranslated <code>ft-bitmap</code> struct.  The function <code>BITMAP-TO-ARRAY</code> has been provided for trivial translation to a native lisp form, if desired.  This is not automatic because the primary use may be passing the bitmap to another C function. </p><a name='EXAMPLES-METRICS' id='EXAMPLES-METRICS'></a> <h2>Loading and Metrics </h2><p>You need not rely on <code>DO-STRING-RENDER</code>, however; far more basic functions are available: </p><pre><code>(load-char *face* #\A)  
+(render-glyph *face*)          ;; =&gt; #&lt;FT-GLYPHSLOT&gt;, may be ignored </code></pre><p>Various metrics are available: </p><pre><code>(get-advance *face* #\A)       ;; =&gt; 17.0  
+(get-kerning *face* #\T #\i)   ;; =&gt; -1.0 </code></pre><p>Or other interesting information: </p><pre><code>(fixed-face-p *face*)          ;; =&gt; NIL  
+(get-glyph-name *face* #\&amp;)    ;; =&gt; "ampersand", 9  
+(get-postscript-name *face*)   ;; =&gt; "TimesNewRomanPSMT"  
+ 
+(ft-face-face-flags *face*)    ;; =&gt; (:SCALABLE :SFNT :HORIZONTAL :KERNING :GLYPH-NAMES :HINTER) </code></pre><p>(The unfortunate naming of the latter is due to <code>FT-FACE</code> being the type, and <code>FACE-FLAGS</code> being the slot-name.  Consistency with FreeType naming is more desirable than occasional aesthetics.) </p><p>Refer to the cl-freetype2 and FreeType API references for a more complete picture of what each provide. </p><a name='EXAMPLES-OUTLINES' id='EXAMPLES-OUTLINES'></a> <h2>Outlines </h2><p>While FreeType2 does simple and fast rendering of fonts to bitmaps, interesting things can be done with the actual outline data for outline fonts.  cl-freetype2 also provides convenient access to this: </p><pre><code>(do-char-decompose (*face* #\A) (op &amp;rest points)  
+  (format t "~&amp;OP: ~A ~A~%" op  
+          (mapcar (lambda (v)  
+                    (if v (list (ft-vector-x v)  
+                                (ft-vector-y v))))  
+                  points)))  
+ 
+;; Output:  
+OP: MOVETO ((708 320) NIL NIL)  
+OP: LINETO ((250 320) NIL NIL)  
+OP: LINETO ((192 180) NIL NIL)  
+OP: CONICTO ((167 113) (167 135) NIL)  
+OP: CONICTO ((189 81) (167 95) NIL)  
+OP: CONICTO ((284 64) (211 68) NIL)  
+OP: LINETO ((284 0) NIL NIL)  
+OP: LINETO ((-30 0) NIL NIL)  
+OP: LINETO ((-30 64) NIL NIL)  
+OP: CONICTO ((52 86) (34 73) NIL)  
+OP: CONICTO ((137 199) (91 114) NIL)  
+OP: LINETO ((500 1024) NIL NIL)  
+OP: LINETO ((556 1024) NIL NIL)  
+OP: LINETO ((896 194) NIL NIL)  
+OP: CONICTO ((974 90) (939 114) NIL)  
+OP: CONICTO ((1071 64) (1009 67) NIL)  
+OP: LINETO ((1071 0) NIL NIL)  
+OP: LINETO ((688 0) NIL NIL)  
+OP: LINETO ((688 64) NIL NIL)  
+OP: CONICTO ((770 79) (749 66) NIL)  
+OP: CONICTO ((792 112) (792 93) NIL)  
+OP: CONICTO ((762 192) (792 137) NIL)  
+OP: LINETO ((708 320) NIL NIL)  
+OP: MOVETO ((698 384) NIL NIL)  
+OP: LINETO ((496 867) NIL NIL)  
+OP: LINETO ((277 384) NIL NIL)  
+OP: LINETO ((698 384) NIL NIL) </code></pre><p>Doing something interesting with this is beyond our scope, though. </p>
+<a name='REFERENCE-FREETYPE2'></a>
+<h1>
+  Reference: FREETYPE2
+</h1>
+<h2>
+  Special Variables
+</h2>
+<a name='*LIBRARY*' class='apiref-row'></a>
+<div class='apiref-spec'>*LIBRARY*
+</div>
+<div class='apiref-lambda'>
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>The default library handle.  This is initialized when cl-freetype2 loads. No locking or other precautions are taken, so multithreaded code should take care to block or use separate instances. </p>
+</div>
+<h2>
+  Functions
+</h2>
+<a name='BITMAP-TO-ARRAY' class='apiref-row'></a>
+<div class='apiref-spec'>BITMAP-TO-ARRAY
+</div>
+<div class='apiref-lambda'>(BITMAP)
+</div>
+<div class='apiref-result'>=> ARRAY
+</div>
+<div class='apiref-doc'><p>Convert <code>BITMAP</code> from internal <code>FT_Bitmap</code>'s internal representation to a native array.  This is specified for a <code>FT-BITMAP-PIXEL-FORMAT</code> of <code>:MONO</code>, <code>:GRAY</code>, <code>:LCD</code>, and <code>:LCD-V</code>. </p><p>Note that for :LCD and :LCD-V, the result is a either 3*width or 3*height, respectively.  This may change in the future. </p>
+</div>
+<a name='CHECK-FONT-FILE' class='apiref-row'></a>
+<div class='apiref-spec'>CHECK-FONT-FILE
+</div>
+<div class='apiref-lambda'>(PATHNAME &OPTIONAL (LIBRARY *LIBRARY*))
+</div>
+<div class='apiref-result'>=> boolean
+</div>
+<div class='apiref-doc'><p>Verify <code>PATHNAME</code> is a supported format by calling <code>FT_Open_Face</code> with a negative face index. </p>
+</div>
+<a name='EXTRACT-FREETYPE' class='apiref-row'></a>
+<div class='apiref-spec'>EXTRACT-FREETYPE
+</div>
+<div class='apiref-lambda'>(LIBRARY)
+</div>
+<div class='apiref-result'>=> LIBRARY
+</div>
+<div class='apiref-doc'><p>When retrieving an <code>FT-LIBRARY</code> handle from an object, using the resulting wrapper is unsafe because it's dependent on the object.  Instead, use <code>EXTRACT-FREETYPE</code> to create a separate version.  Note that this does <strong>not</strong> make it safe to discard the original handle, only extract references to it. </p>
+</div>
+<a name='FIXED-FACE-P' class='apiref-row'></a>
+<div class='apiref-spec'>FIXED-FACE-P
+</div>
+<div class='apiref-lambda'>(FACE)
+</div>
+<div class='apiref-result'>=> boolean
+</div>
+<div class='apiref-doc'><p>Check if <code>FACE</code> is fixed-width according to its flags </p>
+</div>
+<a name='FREETYPE-VERSION' class='apiref-row'></a>
+<div class='apiref-spec'>FREETYPE-VERSION
+</div>
+<div class='apiref-lambda'>(&OPTIONAL (LIBRARY *LIBRARY*))
+</div>
+<div class='apiref-result'>=> version-major, version-minor, version-patch
+</div>
+<div class='apiref-doc'><p>Return the version of the library according to <code>FT_Library_Version</code>. This may differ from the constants acquired at compile-time. </p>
+</div>
+<a name='GET-ADVANCE' class='apiref-row'></a>
+<div class='apiref-spec'>GET-ADVANCE
+</div>
+<div class='apiref-lambda'>(FACE CHAR-OR-CODE &OPTIONAL LOAD-FLAGS)
+</div>
+<div class='apiref-result'>=> advance-float
+</div>
+<div class='apiref-doc'><p>Get the advance in <code>FACE</code> for <code>CHAR-OR-CODE</code>, optionally specifying <code>LOAD-FLAGS</code>. </p><p>This attempts to use <code>FT_Get_Advance</code> to efficiently retrieve an advance.  In this case, <code>LOAD-FLAGS</code> are not used. </p><p>Failing this, this will load the glyph and retrieve the advance using <code>GET-LOADED-ADVANCE</code>, specifying <code>VERTICAL-P</code> by whether the :vertical-layout face-flag is set.  This is generally slower, but many fonts do not have a facility for fast advance retrieval. </p>
+</div>
+<a name='GET-CHAR-INDEX' class='apiref-row'></a>
+<div class='apiref-spec'>GET-CHAR-INDEX
+</div>
+<div class='apiref-lambda'>(FACE CHAR-OR-CODE)
+</div>
+<div class='apiref-result'>=> index
+</div>
+<div class='apiref-doc'><p>Get the index in <code>FACE</code> for <code>CHAR-OR-CODE</code>, which may be either a character, or an integer code. </p>
+</div>
+<a name='GET-GLYPH' class='apiref-row'></a>
+<div class='apiref-spec'>GET-GLYPH
+</div>
+<div class='apiref-lambda'>(FACE-OR-GLYPHSLOT)
+</div>
+<div class='apiref-result'>=> GLYPH
+</div>
+<div class='apiref-doc'><p>Get the <code>FT_Glyph</code> from <code>FACE-OR-GLYPHSLOT</code>. </p>
+</div>
+<a name='GET-GLYPH-NAME' class='apiref-row'></a>
+<div class='apiref-spec'>GET-GLYPH-NAME
+</div>
+<div class='apiref-lambda'>(FACE CHAR-OR-CODE)
+</div>
+<div class='apiref-result'>=> name-string
+</div>
+<div class='apiref-doc'><p>Get the symbolic name and length in <code>FACE</code> for <code>CHAR-OR-CODE</code>. </p>
+</div>
+<a name='GET-KERNING' class='apiref-row'></a>
+<div class='apiref-spec'>GET-KERNING
+</div>
+<div class='apiref-lambda'>(FACE CHAR1 CHAR2 &OPTIONAL MODE)
+</div>
+<div class='apiref-result'>=> kerning-float
+</div>
+<div class='apiref-doc'><p>Get the kerning between <code>CHAR1</code> and <code>CHAR2</code> for <code>FACE</code>, optionally specifying the kerning mode <code>MODE</code>. </p><p>By default this returns the kerning in <em>pixels</em>.  If <code>MODE</code> is specified, an untranslated value is returned as per <code>FT</code><em>Get</em>Kerning with the given flags. </p>
+</div>
+<a name='GET-LOADED-ADVANCE' class='apiref-row'></a>
+<div class='apiref-spec'>GET-LOADED-ADVANCE
+</div>
+<div class='apiref-lambda'>(FACE VERTICAL-P)
+</div>
+<div class='apiref-result'>=> advance-float
+</div>
+<div class='apiref-doc'><p>Get the glyph advance value in <code>FACE</code> for the already-loaded glyph.  If <code>VERTICAL-P</code> is true, get the vertical advance, otherwise, get the horizontal advance. </p>
+</div>
+<a name='GET-OUTLINE' class='apiref-row'></a>
+<div class='apiref-spec'>GET-OUTLINE
+</div>
+<div class='apiref-lambda'>(FACE-OR-GLYPHSLOT &OPTIONAL CHAR-OR-CODE)
+</div>
+<div class='apiref-result'>=> OUTLINE-COPY
+</div>
+<div class='apiref-doc'><p>Retrieve an outline <em>copy</em> from <code>FACE-OR-GLYPHSLOT</code>.  If <code>CHAR-OR-CODE</code> is not nil, it will be loaded, and its outline retrieved.  In this case, <code>FACE-OR-GLYPHSLOT</code> must be an <code>FT-FACE</code>. </p><p>If you wish to retrieve the original outline, you may use <code>GET-GLYPH</code> and <code>FT-OUTLINEGLYPH-OUTLINE</code>, but you <em>must</em> retain the glyph for the outline to remain valid. </p>
+</div>
+<a name='GET-STRING-ADVANCES' class='apiref-row'></a>
+<div class='apiref-spec'>GET-STRING-ADVANCES
+</div>
+<div class='apiref-lambda'>(FACE STRING &OPTIONAL LOAD-FLAGS)
+</div>
+<div class='apiref-result'>=> ARRAY
+</div>
+<div class='apiref-doc'><p>Get an array of advances for the string <code>STRING</code> for face <code>FACE</code>, optionally specifying <code>LOAD-FLAGS</code>. </p>
+</div>
+<a name='GET-STRING-KERNING' class='apiref-row'></a>
+<div class='apiref-spec'>GET-STRING-KERNING
+</div>
+<div class='apiref-lambda'>(FACE STRING &OPTIONAL MODE)
+</div>
+<div class='apiref-result'>=> ARRAY
+</div>
+<div class='apiref-doc'><p>Return an array of kerning values for each pair of characters in <code>STRING</code>, for <code>FACE</code>, optionally specifying the kerning mode <code>MODE</code>.  The results are as per <code>GET-KERNING</code>. </p>
+</div>
+<a name='GET-TRACK-KERNING' class='apiref-row'></a>
+<div class='apiref-spec'>GET-TRACK-KERNING
+</div>
+<div class='apiref-lambda'>(FACE POINT-SIZE DEGREE)
+</div>
+<div class='apiref-result'>=> ARRAY
+</div>
+<div class='apiref-doc'><p>Return the track kerning at <code>POINT-SIZE</code> for <code>FACE</code> given <code>DEGREE</code>.  See the documentation for <code>FT_Get_Track_Kerning</code>.  It seems that only a few Type 1 fonts use this. </p>
+</div>
+<a name='LOAD-CHAR' class='apiref-row'></a>
+<div class='apiref-spec'>LOAD-CHAR
+</div>
+<div class='apiref-lambda'>(FACE CHAR-OR-CODE &OPTIONAL (LOAD-FLAGS :DEFAULT))
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Load a glyph in <code>FACE</code> for <code>CHAR-OR-CODE</code>, optionally specifying <code>LOAD-FLAGS</code>. <code>CHAR-OR-CODE</code> may be specified as per <a href="#GET-CHAR-INDEX"><code>GET-CHAR-INDEX</code></a>. </p>
+</div>
+<a name='LOAD-GLYPH' class='apiref-row'></a>
+<div class='apiref-spec'>LOAD-GLYPH
+</div>
+<div class='apiref-lambda'>(FACE GLYPH-INDEX &OPTIONAL (LOAD-FLAGS :DEFAULT))
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Load a glyph in <code>FACE</code> for <code>GLYPH-INDEX</code>, optionally specifying <code>LOAD-FLAGS</code>. Note that this requires a <em>glyph index</em>.  To directly load a character or code, use <a href="#LOAD-CHAR"><code>LOAD-CHAR</code></a>. </p>
+</div>
+<a name='MAKE-FREETYPE' class='apiref-row'></a>
+<div class='apiref-spec'>MAKE-FREETYPE
+</div>
+<div class='apiref-lambda'>()
+</div>
+<div class='apiref-result'>=> LIBRARY
+</div>
+<div class='apiref-doc'><p>Create and initialize an <code>FT_Library</code> handle.  This will warn if the library version differs from what cl-freetype2 was compiled with. </p>
+</div>
+<a name='NEW-FACE' class='apiref-row'></a>
+<div class='apiref-spec'>NEW-FACE
+</div>
+<div class='apiref-lambda'>(PATHNAME &OPTIONAL (INDEX 0) (LIBRARY *LIBRARY*))
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Make a new <code>FT-FACE</code> from <code>PATHNAME</code>, optionally specifying <code>INDEX</code> as the face index. </p>
+</div>
+<a name='OUTLINE-CHECK' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-CHECK
+</div>
+<div class='apiref-lambda'>(OUTLINE)
+</div>
+<div class='apiref-result'>=> boolean
+</div>
+<div class='apiref-doc'><p>Validate <code>OUTLINE</code>. </p>
+</div>
+<a name='OUTLINE-COPY' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-COPY
+</div>
+<div class='apiref-lambda'>(LIBRARY OUTLINE)
+</div>
+<div class='apiref-result'>=> OUTLINE-COPY
+</div>
+<div class='apiref-doc'><p>Make a copy of <code>OUTLINE</code>.  Make sure <code>LIBRARY</code> is going to be valid for the life of the resulting copy.  This means that if you got the value from an <code>FT_Face</code>, <code>FT_Glyph</code>, or similar parent, <strong>that parent</strong> must be valid, <em>along with</em> the library itself, or use <code>EXTRACT-LIBRARY</code> to get a fresh handle. </p>
+</div>
+<a name='OUTLINE-EMBOLDEN' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-EMBOLDEN
+</div>
+<div class='apiref-lambda'>(OUTLINE STRENGTH)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Embolden <code>OUTLINE</code> by at most 4*<code>STRENGTH</code> pixels. </p>
+</div>
+<a name='OUTLINE-GET-BBOX' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-GET-BBOX
+</div>
+<div class='apiref-lambda'>(OUTLINE)
+</div>
+<div class='apiref-result'>=> BBOX
+</div>
+<div class='apiref-doc'><p>Get an exact bounding box for <code>OUTLINE</code>.  This may differ from the CBox; refer to the FreeType2 API Reference for <code>FT_Outline_Get_BBox</code>. </p>
+</div>
+<a name='OUTLINE-GET-CBOX' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-GET-CBOX
+</div>
+<div class='apiref-lambda'>(OUTLINE)
+</div>
+<div class='apiref-result'>=> BBOX
+</div>
+<div class='apiref-doc'><p>Get the control box for <code>OUTLINE</code>.  This may differ from the BBox; refer to the FreeType2 API Reference for <code>FT_Outline_Get_CBox</code>. </p>
+</div>
+<a name='OUTLINE-GET-ORIENTATION' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-GET-ORIENTATION
+</div>
+<div class='apiref-lambda'>(OUTLINE)
+</div>
+<div class='apiref-result'>=> [:fill-left | :fill-right | :none]
+</div>
+<div class='apiref-doc'><p>Return the fill orientation for <code>OUTLINE</code>. </p>
+</div>
+<a name='OUTLINE-REVERSE' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-REVERSE
+</div>
+<div class='apiref-lambda'>(OUTLINE)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Reverse the drawing direction of <code>OUTLINE</code>.  See <a href="#OUTLINE-GET-ORIENTATION">OUTLINE-GET-ORIENTATION</a> and the FreeType API Reference for <code>FT_Outline_Reverse</code>. </p>
+</div>
+<a name='OUTLINE-TRANSFORM' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-TRANSFORM
+</div>
+<div class='apiref-lambda'>(OUTLINE MATRIX)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Transform <code>OUTLINE</code> using the 2x2 matrix <code>MATRIX</code>. </p>
+</div>
+<a name='OUTLINE-TRANSLATE' class='apiref-row'></a>
+<div class='apiref-spec'>OUTLINE-TRANSLATE
+</div>
+<div class='apiref-lambda'>(OUTLINE X Y)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Translate <code>OUTLINE</code> by <code>X</code>,<code>Y</code>. </p>
+</div>
+<a name='PRINT-WITH-FACE' class='apiref-row'></a>
+<div class='apiref-spec'>PRINT-WITH-FACE
+</div>
+<div class='apiref-lambda'>(FACE STRING &OPTIONAL (DIRECTION :LEFT-RIGHT))
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>This is a toy function to render <code>STRING</code> using <code>FACE</code>, optionally specifying <code>DIRECTION</code> as one of <code>:left-right</code>, <code>:right-left</code>, <code>:up-down</code>, or <code>:down-up</code>.  Some glyphs may cut off or wrap strangely depending on their metrics.  This is also not guaranteed to be a particularly efficient implementation. </p>
+</div>
+<a name='RENDER-GLYPH' class='apiref-row'></a>
+<div class='apiref-spec'>RENDER-GLYPH
+</div>
+<div class='apiref-lambda'>(FACE-OR-GLYPHSLOT &OPTIONAL (RENDER-MODE :NORMAL))
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Render the loaded glyph in <code>FACE-OR-GLYPHSLOT</code>, optionally specifying <code>RENDER-MODE</code>.  Return the rendered glyphslot. </p>
+</div>
+<a name='SET-CHAR-SIZE' class='apiref-row'></a>
+<div class='apiref-spec'>SET-CHAR-SIZE
+</div>
+<div class='apiref-lambda'>(FACE CHAR-WIDTH CHAR-HEIGHT HORZ-RESOLUTION VERT-RESOLUTION)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Set the size for <code>FACE</code> to <code>CHAR-WIDTH</code> and <code>CHAR-HEIGHT</code>, specified in 1/64 <strong>points</strong>.  <code>HORZ-RESOLUTION</code> and <code>VERT-RESOLUTION</code> specify the DPI. </p><p>If either <code>CHAR-WIDTH</code> or <code>CHAR-HEIGHT</code> are 0, the other value is used. </p>
+</div>
+<a name='SET-PIXEL-SIZES' class='apiref-row'></a>
+<div class='apiref-spec'>SET-PIXEL-SIZES
+</div>
+<div class='apiref-lambda'>(FACE PIXEL-WIDTH PIXEL-HEIGHT)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Set the size for <code>FACE</code> in <strong>pixels</strong> to <code>PIXEL-WIDTH</code> and <code>PIXEL-HEIGHT</code>. Especially useful for fixed-size bitmap fonts. </p>
+</div>
+<a name='SET-TRANSFORM' class='apiref-row'></a>
+<div class='apiref-spec'>SET-TRANSFORM
+</div>
+<div class='apiref-lambda'>(FACE MATRIX DELTA)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Set the tranformation matrix for <code>FACE</code> to <code>MATRIX</code>, a 2x2 transformation matrix specified as per <a href="cl-freetype2-types.html#CONVERT-MATRIX"><code>CONVERT-MATRIX</code></a>, and <code>DELTA</code>, a translation vector specified as per <a href="cl-freetype2-types.html#CONVERT-VECTOR"><code>CONVERT-VECTOR</code></a>. </p>
+</div>
+<h2>
+  Macros
+</h2>
+<a name='DO-CHAR-DECOMPOSE' class='apiref-row'></a>
+<div class='apiref-spec'>DO-CHAR-DECOMPOSE
+</div>
+<div class='apiref-lambda'>((FACE CHAR-OR-CODE) DECOMPOSE-LAMBDA &BODY BODY)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Load <code>CHAR-OR-CODE</code> in <code>FACE</code>, and iterate the outline, passing the operation, a point, and up to two more points to <code>BODY</code>.  <code>DECOMPOSE-LAMBDA</code> should be specified as per <code>DO-OUTLINE-DECOMPOSE</code>. </p>
+</div>
+<a name='DO-STRING-RENDER' class='apiref-row'></a>
+<div class='apiref-spec'>DO-STRING-RENDER
+</div>
+<div class='apiref-lambda'>((FACE STRING BITMAP-VAR X-VAR Y-VAR &OPTIONAL (DIRECTION :LEFT-RIGHT)
+  (LOAD-CHAR-FUNCTION 'LOAD-CHAR))
+ &BODY BODY)
+</div>
+<div class='apiref-result'>
+</div>
+<div class='apiref-doc'><p>Load, render, and compute metrics for each character in STRING in an optimal manner. <code>FACE</code> should be set up appropriately (e.g., size). <code>BITMAP-VAR</code> is passed to the block as an ft-bitmap, <code>X-VAR</code> and <code>Y-VAR</code> are coordinates for each glyph.  <code>DIRECTION</code> may be specified as <code>:left-right</code>, <code>:right-left</code>, <code>:up-down</code>, or <code>:down-up</code>.  <code>LOAD-CHAR-FUNCTION</code> is a minimal hook for application-side caching; it should be compatible with <a href="#LOAD-CHAR"><code>LOAD-CHAR</code></a>.  cl-freetype2 does not do any caching itself. </p>
+</div><a name='INTERNALS' id='INTERNALS'></a> <h1>Internals </h1><p>FreeType2 is not something generally used directly in most application code, but there are a number of libraries which use it.  Thus cl-freetype2 has been written with integration in mind.  This section should be a guide for the underlying implementation that may be useful inu such cases. </p><a name='TYPES' id='TYPES'></a> <h2>Types </h2><p>Freetype types are represented by a DEFSTRUCT-wrapped CFFI pointer. These are freed via TRIVIAL-FINALIZER when no references <strong>to the wrapper</strong> remain.  If you otherwise hand the pointer off to something else which retains it, you <strong>must</strong> keep a reference to the wrapper for the life of the pointer. </p><p>There is no other translation or conversion until accessors are called. </p><pre><code>(defvar *face* (new-face *valid-face-path*)) =&gt; #&lt;FT-FACE "Name Family" {#x00844C90}&gt; </code></pre><p>The pointer can be accessed with FW-PTR: </p><pre><code>;; The format will vary depending on your Lisp, of course:  
+(fw-ptr *face*) =&gt; #.(SB-SYS:INT-SAP #X00844C90) </code></pre><p>(<strong>NOTE:</strong> <code>fw-ptr</code> is clearly a terrible name, and is pending rename.) </p><a name='TESTING' id='TESTING'></a> <h2>Testing </h2><p>Testing is done via 5am and the <code>:cl-freetype2-tests</code> package, which resides in <code>t/</code>.  To just run tests, the following is sufficient: </p><pre><code>(asdf:test-system :cl-freetype2) </code></pre><p>All tests should pass. </p><a name='PORTING' id='PORTING'></a> <h2>Porting </h2><p>If CFFI loads, and can grovel, most of cl-freetype2 should work.  You may need to look in <code>src/ffi/cffi-cwrap.lisp</code> and tweak the definitions of <code>FINALIZE</code> and <code>FOREIGN-WRAPPER</code>. </p><p><code>FINALIZE</code> has two implementations: one that simply calls <code>TG:FINALIZE</code>, and one that tracks references to finalizers to ensure call order.  Proper cleanup order is critical, and out-of-order calls will result in memory faults. </p><p><code>FOREIGN-WRAPPER</code> defaults the <code>PTR</code> slot to <code>(cffi:null-pointer)</code>, but depending on the implementation, this may or may not be an immediate value. </p><p>Running the tests should validate the majority of the API.  Callbacks may be an issue; these are used for outlines, which are part of the unit tests. </p><a name='ABOUT' id='ABOUT'></a> <h1>About </h1><ul><li>Author: Ryan Pavlik &lt; <code>rpavlik at gmail dot com</code> &gt;</li><li>License: Copyright 2011.  Released under BSD and LLGPL similar to   FreeType itself. </li></ul>
+</html>
