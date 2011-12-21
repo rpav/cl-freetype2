@@ -16,6 +16,7 @@
    (:file "face")
    (:file "glyph")
    (:file "outline")
+   (:file "render")
    (:file "toy")
 
    (:static-file "TranscendsGames.otf")
