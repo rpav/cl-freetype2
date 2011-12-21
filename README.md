@@ -20,6 +20,11 @@ Confirmed not working:
 * ECL (CFFI doesn't load)
 * ABCL (CFFI loads, but can't grovel?)
 
+Documentation
+-------------
+
+See `doc/cl-freetype2.html` for complete documentation.
+
 Example
 -------
 
