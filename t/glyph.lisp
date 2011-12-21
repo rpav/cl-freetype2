@@ -7,7 +7,7 @@
 
 (test (test-load-glyphslot :depends-on test-set-size)
   "Verify basic glyph info"
-  (finishes (load-char *face* #\j))
+  (finishes (load-char *face* #\j '(:no-bitmap)))
   (is (typep (setf *glyphslot* (ft-face-glyph *face*)) 'ft-glyphslot))
   (is (typep (setf *metrics* (ft-glyphslot-metrics *glyphslot*)) 'ft-glyph-metrics)))
 
@@ -17,8 +17,8 @@
   (is (= -64 (ft-glyph-metrics-hori-bearing-x *metrics*)))
   (is (= 1088 (ft-glyph-metrics-hori-bearing-y *metrics*))))
 
-(test (test-load-glyph :depends-on test-load-glyphslot)
+(test (test-load-glyph :depends-on test-glyph-metrics)
   (is (typep (setf *glyph* (get-glyph *face*)) 'ft-outlineglyph)))
 
 (test (test-render-glyph :depends-on test-load-glyph)
-  (finishes (render-glyph *glyphslot*)))
+  (finishes (render-glyph *face*)))
