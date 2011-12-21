@@ -106,6 +106,7 @@ the first control point, and `POINT3` is the second control point."
                                  (fw-ptr freetype2::*outline-funcs*)
                                  (null-pointer)))))
 
+(export 'do-outline-decompose)
 
 (defmacro do-char-decompose ((face char-or-code) decompose-lambda &body body)
   "Load `CHAR-OR-CODE` in `FACE`, and iterate the outline, passing the operation,
