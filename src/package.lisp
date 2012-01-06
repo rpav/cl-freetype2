@@ -9,7 +9,7 @@ to avoid requiring FREETYPE2-FFI imports."))
   (:documentation "Foreign Function definitions only."))
 
 (defpackage :freetype2
-  (:use #:cl #:cffi #:freetype2-types #:freetype2-ffi)
+  (:use #:cl #:alexandria #:cffi #:freetype2-types #:freetype2-ffi)
   (:nicknames :ft2)
   (:documentation "
 This is a general Freetype 2 wrapper for Common Lisp using CFFI.  It's

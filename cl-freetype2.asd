@@ -6,7 +6,7 @@
   :author "Ryan Pavlik <rpavlik@gmail.com>"
   :license "BSD, LLGPL"
 
-  :depends-on (:cffi :trivial-garbage)
+  :depends-on (:alexandria :cffi :trivial-garbage)
   :serial t
 
   :pathname "src"
