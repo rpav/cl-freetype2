@@ -1,8 +1,8 @@
 (defpackage :freetype2-types
   (:use #:cl #:cffi)
+  (:nicknames :ft2-types)
   (:documentation "FreeType 2 types and type interface.  This is separate
-to avoid requiring FREETYPE2-FFI imports.
-"))
+to avoid requiring FREETYPE2-FFI imports."))
 
 (defpackage :freetype2-ffi
   (:use #:cl #:cffi #:freetype2-types)
