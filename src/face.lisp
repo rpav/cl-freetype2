@@ -10,10 +10,12 @@
                 (pointer-address (fw-ptr object)))))
 
 (defun check-font-file (pathname &optional (library *library*))
-  "=> boolean
+  "=> NUM-FACES or NIL
 Verify `PATHNAME` is a supported format by calling `FT_Open_Face`
-with a negative face index."
-  (with-foreign-object (c-open-args 'ft-open-args)
+with a negative face index.  If the face is supported, return the
+number of faces in the file.  Otherwise, NIL."
+  (with-foreign-objects ((c-open-args 'ft-open-args)
+                         (face 'ft-face))
     (with-foreign-string (cpathname (namestring pathname))
       (let ((args (%make-ft-open-args :ptr c-open-args)))
         (setf (ft-open-args-flags args) :pathname
@@ -24,7 +26,11 @@ with a negative face index."
               (ft-open-args-driver args) nil
               (ft-open-args-num-params args) 0
               (ft-open-args-params args) (null-pointer))
-        (eq :ok (ft-open-face library c-open-args -1 (null-pointer)))))))
+        (if (eq :ok (ft-open-face library c-open-args -1 face))
+            (let ((num-faces (ft2-types::%ft-facerec-num-faces (p* face))))
+              (ft-done-face (p* face))
+              num-faces)
+            nil)))))
 
 (export 'check-font-file)
 
@@ -36,6 +42,23 @@ face index."
     (ft-done-face (p* &face))))
 
 (export 'new-face)
+
+(defmacro with-open-face ((var pathname &optional (index 0) (library '*library*))
+                     &body body)
+  "Make a new `FT-FACE` on the stack from `PATHNAME`, closing and freeing
+at the end of `BODY`"
+  (let ((ptr (gensym)))
+  `(let ((,var (%make-ft-face)))
+     (with-foreign-object (,ptr 'ft-face)
+       (unwind-protect
+            (progn
+              (ft-error (ft-new-face ,library (namestring ,pathname) ,index ,ptr))
+              (setf (fw-ptr ,var) ,ptr)
+              ,@body)
+         (unless (null-pointer-p (fw-ptr ,var))
+           (ft-done-face (p* ,ptr))))))))
+
+(export 'with-open-face)
 
 (defun fixed-face-p (face)
   "=> boolean
@@ -202,3 +225,7 @@ specifying `LOAD-FLAGS`."
     advance))
 
 (export 'get-string-advances)
+
+;; From freetype2-ffi, no need for wrapping:
+(export 'get-postscript-name)
+(export 'get-fstype-flags)
