@@ -19,7 +19,8 @@ for instance, within the [`DO-STRING-RENDER`](#DO-STRING-RENDER) loop."
             (get-loaded-advance face vertical-p)
             (ft-glyphslot-bitmap-left glyphslot)
             (ft-glyphslot-bitmap-top glyphslot))))
-    
+
+(export 'default-load-render)
 
 (defmacro do-string-render ((face string bitmap-var x-var y-var
                              &optional (direction :left-right)
@@ -53,7 +54,7 @@ details."
                do
                   (let (,bitmap-var ,advance ,left ,top)
                     (multiple-value-setq (,bitmap-var ,advance ,left ,top)
-                        (,load-function ,face ,c1 ,vertical-p))
+                        (funcall ,load-function ,face ,c1 ,vertical-p))
                     ,(unless (eq load-function 'default-load-render)
                        `(unless ,bitmap-var
                           (multiple-value-setq (,bitmap-var ,advance ,left ,top)
