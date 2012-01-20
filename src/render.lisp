@@ -54,7 +54,10 @@ details."
                do
                   (let (,bitmap-var ,advance ,left ,top)
                     (multiple-value-setq (,bitmap-var ,advance ,left ,top)
-                        (funcall ,load-function ,face ,c1 ,vertical-p))
+                        (funcall ,(if (symbolp load-function)
+                                           `(function ,load-function)
+                                           load-function)
+                                 ,face ,c1 ,vertical-p))
                     ,(unless (eq load-function 'default-load-render)
                        `(unless ,bitmap-var
                           (multiple-value-setq (,bitmap-var ,advance ,left ,top)
