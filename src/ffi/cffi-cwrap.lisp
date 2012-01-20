@@ -46,9 +46,9 @@
 
 (export 'fw-ptr)
 
-#+-(declaim (inline w* w[] p* &))
-(defun w* (wrapper &optional (type-cast :pointer))
-  (mem-ref (fw-ptr wrapper) type-cast))
+(declaim (inline w* w[] p* &))
+(defun w* (wrapper)
+  (mem-ref (fw-ptr wrapper) :pointer))
 
 (defun w[] (wrapper index type-cast)
   (let* ((size (foreign-type-size type-cast)))
@@ -157,33 +157,32 @@
                         do (setf (elt arr i) (,rec-fn :ptr ptr)))
                   arr))
               (export ',accessor-name))))
-         (cffi::foreign-bitfield
-          (let ((test-name (bitfield-test-name (or handle-name type) slot))
-                (canonical-type (cffi::canonicalize slot-type)))
-            `(progn
-               (defun ,accessor-name (instance)
-                 (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
-               (defun (setf ,accessor-name) (v instance)
-                 (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
-               (defmacro ,test-name (instance flags)
-                 `(let ((instance ,instance))
-                    (logtest (foreign-bitfield-value ',',(cffi::name slot-type) ,flags)
-                             (mem-ref (foreign-slot-pointer ,',instance-form ',',foreign-type-name ',',slot-name)
-                                      ',',canonical-type))))
-               (export ',accessor-name)
-               (export ',test-name))))
-         (t
-          `(progn
-             (defun ,accessor-name (instance)
-               (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
-             (defun (setf ,accessor-name) (v instance)
-               (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
-             (export ',accessor-name))))))
-    
-    (defun make-accessors (type slots handle-name)
-      (loop for slot in slots
-            collecting (make-accessor type slot handle-name) into accessors
-            finally (return accessors))))
+        (cffi::foreign-bitfield
+         (let ((test-name (bitfield-test-name (or handle-name type) slot))
+               (canonical-type (cffi::canonicalize slot-type)))
+           `(progn
+              (defun ,accessor-name (instance)
+                (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
+              (defun (setf ,accessor-name) (v instance)
+                (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
+              (defmacro ,test-name (instance flags)
+                `(let ((instance ,instance))
+                   (logtest (foreign-bitfield-value ',',(cffi::name slot-type) ,flags)
+                            (mem-ref ,',instance-form ',',canonical-type ,(foreign-slot-offset ',foreign-type-name ',slot-name)))))
+              (export ',accessor-name)
+              (export ',test-name))))
+        (t
+         `(progn
+            (defun ,accessor-name (instance)
+              (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
+            (defun (setf ,accessor-name) (v instance)
+              (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
+            (export ',accessor-name))))))
+  
+  (defun make-accessors (type slots handle-name)
+    (loop for slot in slots
+          collecting (make-accessor type slot handle-name) into accessors
+          finally (return accessors))))
 
 (defmacro defcwrap (name slots &optional wrapper-slots)
   (let* ((handle-type (if (listp name) (cadr name) nil))
@@ -214,6 +213,12 @@
            (unless (null-pointer-p ptr)
              (,make-name :ptr ptr)))
 
+         (defmethod expand-to-foreign (wrapper (type ,type-name))
+           `(if ,wrapper (w* ,wrapper) (null-pointer)))
+         (defmethod expand-from-foreign (ptr (type ,type-name))
+           `(unless (null-pointer-p ,ptr)
+              (,',make-name :ptr ,ptr)))
+
          ;; Export
          (export ',name)
          (export ',type-name)
@@ -232,15 +237,18 @@
          (defctype ,foreign-name ,type)
          (defstruct (,name (:include foreign-wrapper)
                            (:constructor ,make-name)))
-         #+-(defmethod expand-to-foreign (wrapper (type ,type-name))
-           `(w* ,wrapper))
-         #+-(defmethod expand-from-foreign (ptr (type ,type-name))
-           `(,',make-name :ptr ,ptr :cffitype ',',name))
+
          (defmethod translate-to-foreign (wrapper (type ,type-name))
            (if wrapper (w* wrapper) (null-pointer)))
          (defmethod translate-from-foreign (ptr (type ,type-name))
            (unless (null-pointer-p ptr)
              (,make-name :ptr ptr)))
+         (defmethod expand-to-foreign (wrapper (type ,type-name))
+           `(if ,wrapper (w* ,wrapper) (null-pointer)))
+         (defmethod expand-from-foreign (ptr (type ,type-name))
+           `(unless (null-pointer-p ,ptr)
+              (,',make-name :ptr ,ptr)))
+         
          (export ',name)
          (export ',type-name)
          (export ',foreign-name)
