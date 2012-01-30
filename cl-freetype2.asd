@@ -4,7 +4,7 @@
 (defsystem :cl-freetype2
   :description "Wrapper for the Freetype2 library"
   :author "Ryan Pavlik <rpavlik@gmail.com>"
-  :license "BSD, LLGPL"
+  :license "New BSD, LLGPL"
 
   :depends-on (:alexandria :cffi :trivial-garbage)
   :serial t
