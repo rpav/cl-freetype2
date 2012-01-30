@@ -63,6 +63,9 @@
                (:file "ft2docs")
                (:static-file "ft2docs.css")))
 
+(defmethod perform :after ((o load-op) (c (eql (find-system :cl-freetype2))))
+  (pushnew :freetype2 cl:*features*))
+
 (defmethod perform :after ((o load-op) (c (eql (find-system :cl-freetype2-doc))))
   (let ((fn (find-symbol "GENERATE-DOCS" (find-package :freetype2))))
     (funcall fn)))
