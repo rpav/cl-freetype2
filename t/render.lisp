@@ -19,7 +19,7 @@
 
 (defun make-metrics (face string direction)
   (let (metrics)
-    (do-string-render (face string bitmap x y direction)
+    (do-string-render (face string bitmap x y :direction direction)
       (push (list (list (ft-bitmap-width bitmap)
                         (ft-bitmap-rows bitmap))
                   x y)

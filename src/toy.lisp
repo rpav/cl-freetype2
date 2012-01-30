@@ -11,7 +11,8 @@
          (width (round (string-pixel-width face string flags)))
          (array (make-array (list height width) :element-type 'unsigned-byte
                                                 :initial-element 0)))
-    (do-string-render (face string bitmap x y direction)
+    (do-string-render (face string bitmap x y
+                       :direction direction)
       (let ((barray (bitmap-to-array bitmap)))
         (case direction
           (:left-right (ablit array barray :x x :y y))

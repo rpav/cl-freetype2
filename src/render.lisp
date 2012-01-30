@@ -23,18 +23,28 @@ for instance, within the [`DO-STRING-RENDER`](#DO-STRING-RENDER) loop."
 (export 'default-load-render)
 
 (defmacro do-string-render ((face string bitmap-var x-var y-var
-                             &optional (direction :left-right)
-                               (load-function 'default-load-render))
+                             &key
+                               (direction :left-right)
+                               (load-function 'default-load-render)
+                               (baseline-y-p nil)
+                               (offsets-p t))
                             &body body)
   "Load, render, and compute metrics for each character in STRING in
 an optimal manner. `FACE` should be set up appropriately (e.g., size).
-`BITMAP-VAR` is passed to the block as an ft-bitmap, `X-VAR` and `Y-VAR` are
-coordinates for each glyph.  `DIRECTION` may be specified as `:left-right`,
-`:right-left`, `:up-down`, or `:down-up`.  `LOAD-FUNCTION` by default loads
-and renders a glyph, returning an `FT-BITMAP`.  A custom function may be used
-in place to assist in caching.  cl-freetype2 does not do any caching itself.
-See the documentation for [`DEFAULT-LOAD-RENDER`](#DEFAULT-LOAD-RENDER) for
-details."
+`BITMAP-VAR` is passed to the block as an ft-bitmap, `X-VAR` and
+`Y-VAR` are coordinates for each glyph.  `DIRECTION` may be specified
+as `:left-right`, `:right-left`, `:up-down`, or `:down-up`.
+`LOAD-FUNCTION` by default loads and renders a glyph, returning an
+`FT-BITMAP`.  A custom function may be used in place to assist in
+caching.  cl-freetype2 does not do any caching itself.  See the
+documentation for [`DEFAULT-LOAD-RENDER`](#DEFAULT-LOAD-RENDER) for
+details.
+
+`BASELINE-Y-P`, if set (not default), will give `Y` in terms of
+*baseline* rather than an offset to the upper edge.  `OFFSETS-P`, if
+set (default), will calculate `LEFT` offset into `X`.  This is
+critical for correct inter-glyph spacing, but some things (e.g. Cairo)
+calculate this separately."
   (once-only (face string)
     (with-gensyms (c1 c2 x y left top
                    advance max-ascender len
@@ -66,8 +76,10 @@ details."
                       (:right-left (decf ,x (+ ,advance ,kern)))
                       (:down-up (decf ,y ,advance)))
 
-                    (let ((,x-var (round (+ ,x ,left)))
-                          (,y-var (round (+ ,y (- ,max-ascender ,top)))))
+                    (let ((,x-var (round ,(if offsets-p `(+ ,x ,left) x)))
+                          (,y-var (round ,(if baseline-y-p
+                                              `(+ ,y ,max-ascender)
+                                              `(+ ,y (- ,max-ascender ,top))))))
                       ,@body)
 
                     (case ,direction
