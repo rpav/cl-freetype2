@@ -30,7 +30,8 @@
                  (:file "ft2-face")
                  (:file "ft2-glyph")
                  (:file "ft2-size")
-                 (:file "ft2-outline")))
+                 (:file "ft2-outline")
+                 (:file "ft2-bitmap")))
 
                (:file "init")
                (:file "face")

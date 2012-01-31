@@ -1,5 +1,20 @@
 (in-package :freetype2)
 
+ ;; Basic bitmap functions
+
+(defun bitmap-new (&optional (library *library*))
+  (make-wrapper (bitmap &bitmap ft-bitmap)
+    (ft-bitmap-new &bitmap)
+    (ft-bitmap-done library &bitmap)))
+
+(export 'bitmap-new)
+
+(defun bitmap-convert (bitmap alignment &optional (library *library*))
+  (let ((target (bitmap-new library)))
+    (ft-bitmap-convert library bitmap target alignment)))
+
+(export 'bitmap-convert)
+
  ;; String utility
 (defun string-pixel-width (face string &optional (load-flags '(:default)))
   "Get the pixel width of STRING in FACE given LOAD-FLAGS."
