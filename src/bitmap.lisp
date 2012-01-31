@@ -4,14 +4,17 @@
 
 (defun bitmap-new (&optional (library *library*))
   (make-wrapper (bitmap &bitmap ft-bitmap)
-    (ft-bitmap-new &bitmap)
+    (progn (ft-bitmap-new &bitmap) :ok)
     (ft-bitmap-done library &bitmap)))
 
 (export 'bitmap-new)
 
 (defun bitmap-convert (bitmap alignment &optional (library *library*))
   (let ((target (bitmap-new library)))
-    (ft-bitmap-convert library bitmap target alignment)))
+    (ft-bitmap-convert library
+                       (fw-ptr bitmap)
+                       (fw-ptr target) alignment)
+    target))
 
 (export 'bitmap-convert)
 
