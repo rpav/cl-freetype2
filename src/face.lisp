@@ -229,3 +229,4 @@ specifying `LOAD-FLAGS`."
 ;; From freetype2-ffi, no need for wrapping:
 (export 'get-postscript-name)
 (export 'get-fstype-flags)
+(export 'get-name-index)

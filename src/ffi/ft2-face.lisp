@@ -115,6 +115,9 @@
 (export 'ft-get-glyph-name)
 
 (defcfun ("FT_Get_Postscript_Name" get-postscript-name) :string
+  "=> name-string
+
+Get the PostScript name for the Type1 or TrueType font `FACE`."
   (face ft-face))
 
 (export 'get-postscript-name)
@@ -156,12 +159,18 @@
 (export 'ft-get-next-char)
 
 (defcfun ("FT_Get_Name_Index" get-name-index) ft-uint
+  "=> index
+
+Get the index for the glyph named `GLYPH-NAME` for `FACE`."
   (face ft-face)
   (glyph-name :string))
 
 (export 'get-name-index)
 
 (defcfun ("FT_Get_FSType_Flags" get-fstype-flags) ft-fstype-flags
+  "=> flags
+
+Get the fsType flags for `FACE`."
   (face ft-face))
 
 (export 'get-fstype-flags)

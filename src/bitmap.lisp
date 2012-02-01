@@ -3,6 +3,9 @@
  ;; Basic bitmap functions
 
 (defun bitmap-new (&optional (library *library*))
+  "=> BITMAP
+
+Create a new FT_Bitmap."
   (make-wrapper (bitmap &bitmap ft-bitmap)
     (progn (ft-bitmap-new &bitmap) :ok)
     (ft-bitmap-done library &bitmap)))
@@ -10,6 +13,9 @@
 (export 'bitmap-new)
 
 (defun bitmap-convert (bitmap alignment &optional (library *library*))
+  "=> NEW-BITMAP
+
+Convert `BITMAP` to an 8bpp bitmap with `ALIGNMENT`-byte alignment."
   (let ((target (bitmap-new library)))
     (ft-bitmap-convert library
                        (fw-ptr bitmap)
