@@ -38,15 +38,21 @@ Convert `BITMAP` to an 8bpp bitmap with `ALIGNMENT`-byte alignment."
               (reduce #'+ (get-string-kerning face string))))
        (ft-size-metrics-x-ppem (ft-size-metrics (ft-face-size face))))))
 
+(export 'string-pixel-width)
+
 (defun face-ascender-pixels (face)
   "Return the max ascender for FACE, in pixels."
   (ft-26dot6-to-float
    (ft-size-metrics-ascender (ft-size-metrics (ft-face-size face)))))
 
+(export 'face-ascender-pixels)
+
 (defun face-descender-pixels (face)
   "Return the max descender for FACE, in pixels."
   (ft-26dot6-to-float
    (- (ft-size-metrics-descender (ft-size-metrics (ft-face-size face))))))
+
+(export 'face-descender-pixels)
 
 (defun string-pixel-height (face string &optional (load-flags '(:default)))
   "Get the pixel height of STRING in FACE given LOAD-FLAGS."
@@ -58,6 +64,8 @@ Convert `BITMAP` to an 8bpp bitmap with `ALIGNMENT`-byte alignment."
                (ft-size-metrics-y-ppem (ft-size-metrics (ft-face-size face))))
             (reduce #'+ (get-string-advances face string flags-value)))
         (+ (face-ascender-pixels face) (face-descender-pixels face)))))
+
+(export 'string-pixel-height)
 
  ;; Bitmap
 

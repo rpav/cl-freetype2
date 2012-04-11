@@ -89,6 +89,7 @@
 
 (export 'ft-set-transform)
 
+(declaim (inline ft-get-kerning))
 (defcfun ("FT_Get_Kerning" ft-get-kerning) ft-error
   (face ft-face)
   (left-glyph ft-uint)
@@ -139,6 +140,7 @@ Get the PostScript name for the Type1 or TrueType font `FACE`."
 
 (export 'ft-get-charmap-index)
 
+(declaim (inline ft-get-char-index))
 (defcfun ("FT_Get_Char_Index" ft-get-char-index) ft-uint
   (face ft-face)
   (charcode ft-ulong))

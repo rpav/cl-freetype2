@@ -97,6 +97,7 @@
 
 (defcwraptype ft-pointer :pointer)
 
+(declaim (inline %ft-vector-x %ft-vector-y))
 (defcwrap ft-vector
     ((x ft-pos)
      (y ft-pos)))

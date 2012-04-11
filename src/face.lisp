@@ -84,6 +84,7 @@ Especially useful for fixed-size bitmap fonts."
 
 (export 'set-pixel-sizes)
 
+(declaim (inline get-char-index))
 (defun get-char-index (face char-or-code)
   "=> index
 Get the index in `FACE` for `CHAR-OR-CODE`, which may be either a character,
@@ -120,6 +121,7 @@ and `DELTA`, a translation vector specified as per
 
 (export 'set-transform)
 
+(declaim (inline get-kerning))
 (defun get-kerning (face char1 char2 &optional mode)
   "=> kerning-float
 Get the kerning between `CHAR1` and `CHAR2` for `FACE`, optionally specifying

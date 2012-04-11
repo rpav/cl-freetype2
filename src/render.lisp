@@ -49,18 +49,19 @@ calculate this separately."
   (once-only (face string)
     (with-gensyms (c2 x y left top
                    advance max-ascender len
-                   kern vertical-p)
+                   kern vertical-p fixed-p)
       (let ((c1 (or with-char (gensym))))
         `(let ((,max-ascender (face-ascender-pixels ,face))
                (,len (length ,string))
-               (,vertical-p (or (eq ,direction :up-down) (eq ,direction :down-up))))
+               (,vertical-p (or (eq ,direction :up-down) (eq ,direction :down-up)))
+               (,fixed-p (fixed-face-p ,face)))
            (loop with ,x = 0.0 and ,y = 0.0
                  for i from 0 below ,len
                  as ,c1 = (aref ,string i)
                  as ,c2 = (if (< i (1- ,len))
                               (aref ,string (1+ i))
                               nil)
-                 as ,kern = (if (and ,c2 (not ,vertical-p))
+                 as ,kern = (if (and (not ,fixed-p) ,c2 (not ,vertical-p))
                                 (get-kerning ,face ,c1 ,c2)
                                 0.0)
                  do
