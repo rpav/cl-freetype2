@@ -228,6 +228,23 @@ specifying `LOAD-FLAGS`."
 
 (export 'get-string-advances)
 
+(defun face-metrics (face)
+  "=> x-ppem, y-ppem, x-scale, y-scale, ascender, descender, height, max-advance
+
+Return the *face* metrics for `FACE` as floating point values.  If a
+size has not been selected for `FACE`, the results are undefined."
+  (let ((metrics (ft-size-metrics (ft-face-size face))))
+    (values (ft-26dot6-to-float (ft-size-metrics-x-ppem metrics))
+            (ft-26dot6-to-float (ft-size-metrics-y-ppem metrics))
+            (ft-26dot6-to-float (ft-size-metrics-x-scale metrics))
+            (ft-26dot6-to-float (ft-size-metrics-y-scale metrics))
+            (ft-26dot6-to-float (ft-size-metrics-ascender metrics))
+            (ft-26dot6-to-float (ft-size-metrics-descender metrics))
+            (ft-26dot6-to-float (ft-size-metrics-height metrics))
+            (ft-26dot6-to-float (ft-size-metrics-max-advance metrics)))))
+
+(export 'face-metrics)
+
 ;; From freetype2-ffi, no need for wrapping:
 (export 'get-postscript-name)
 (export 'get-fstype-flags)
