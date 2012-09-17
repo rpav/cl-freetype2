@@ -1,6 +1,8 @@
 (in-package :freetype2-types)
 
-(cc-flags "-I/usr/include/freetype2")
+(cc-flags #+darwin "-I/opt/local/include/freetype2"
+          #-darwin "-I/usr/include/freetype2")
+
 (include "grovel-freetype.h")
 
 (constant (+version-major+ "FREETYPE_MAJOR"))
