@@ -6,7 +6,7 @@
   "=> BITMAP
 
 Create a new FT_Bitmap."
-  (make-wrapper (bitmap &bitmap ft-bitmap)
+  (make-wrapper (bitmap &bitmap ft-bitmap (:struct foreign-ft-bitmap))
     (progn (ft-bitmap-new &bitmap) :ok)
     (ft-bitmap-done library &bitmap)))
 

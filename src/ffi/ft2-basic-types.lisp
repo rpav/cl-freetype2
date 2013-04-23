@@ -2,8 +2,8 @@
 
  ;; Util
 
-(defun make-collected-foreign (type &optional (alloc-fn 'libc-calloc) (free-fn 'libc-free))
-  (let* ((ptr (funcall alloc-fn (foreign-type-size type) 1))
+(defun make-collected-foreign (type &optional (foreign-name type) (alloc-fn 'libc-calloc) (free-fn 'libc-free))
+  (let* ((ptr (funcall alloc-fn (foreign-type-size foreign-name) 1))
          (wrapper (make-instance type)))
     (setf (fw-ptr wrapper) ptr)
     (freetype2-types:finalize wrapper (lambda () (funcall free-fn ptr)))
@@ -28,7 +28,8 @@ raise an error, and run `CLEANUP`.  Otherwise, take no further action."
   "Make an `FT-MATRIX` given `XX`, `XY`, `YX`, and `YY`.  This may be
 passed directly to `SET-TRANSFORM`, and may be more efficient than
 converting from native forms."
-  (let ((matrix (make-collected-foreign 'ft-matrix)))
+  (let ((matrix (make-collected-foreign 'ft-matrix
+                                        '(:struct foreign-ft-matrix))))
     (setf (ft-matrix-xx matrix) xx)
     (setf (ft-matrix-xy matrix) xy)
     (setf (ft-matrix-yx matrix) yx)
@@ -41,7 +42,8 @@ converting from native forms."
   "Make an `FT-VECTOR` given `X` and `Y`.  This may be passed directly
 to `SET-TRANSFORM`, and may be more efficient than converting from native
 forms."
-  (let ((vector (make-collected-foreign 'ft-vector)))
+  (let ((vector (make-collected-foreign 'ft-vector
+                                        '(:struct ft-vector))))
     (setf (ft-vector-x vector) x)
     (setf (ft-vector-y vector) y)
     vector))

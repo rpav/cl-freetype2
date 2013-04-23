@@ -11,7 +11,7 @@ a fresh handle."
   (let* ((num-points (ft-outline-n-points outline))
          (num-contours (ft-outline-n-contours outline))
          (wrapper
-           (make-wrapper (new-outline &new-outline ft-outline)
+           (make-wrapper (new-outline &new-outline ft-outline (:struct foreign-ft-outline))
              (ft-outline-new library num-points num-contours &new-outline)
              (ft-outline-done library &new-outline))))
     (ft-error (ft-outline-copy (fw-ptr outline) (fw-ptr wrapper)))
@@ -40,49 +40,50 @@ to remain valid."
 
 (defvar *decompose-callback*)
 
-(defcallback cb-outline-moveto :int ((to (:pointer ft-vector)) (user :pointer))
+(defcallback cb-outline-moveto :int ((to (:pointer (:struct foreign-ft-vector))) (user :pointer))
   (declare (ignore user))
   (handler-case
-      (funcall *decompose-callback* :moveto (convert-from-foreign to 'ft-vector)
+      (funcall *decompose-callback* :moveto (convert-from-foreign to '(:struct foreign-ft-vector))
                nil nil)
     (error () 1))
   0)
 
-(defcallback cb-outline-lineto :int ((to (:pointer ft-vector)) (user :pointer))
+(defcallback cb-outline-lineto :int ((to (:pointer (:struct foreign-ft-vector))) (user :pointer))
   (declare (ignore user))
   (handler-case
-      (funcall *decompose-callback* :lineto (convert-from-foreign to 'ft-vector)
+      (funcall *decompose-callback* :lineto (convert-from-foreign to '(:struct foreign-ft-vector))
                nil nil)
     (error () 1))
   0)
 
-(defcallback cb-outline-conicto :int ((control (:pointer ft-vector))
-                                      (to (:pointer ft-vector))
+(defcallback cb-outline-conicto :int ((control (:pointer (:struct foreign-ft-vector)))
+                                      (to (:pointer (:struct foreign-ft-vector)))
                                       (user :pointer))
   (declare (ignore user))
   (handler-case
       (funcall *decompose-callback* :conicto
-               (convert-from-foreign to 'ft-vector)
-               (convert-from-foreign control 'ft-vector)
+               (convert-from-foreign to '(:struct foreign-ft-vector))
+               (convert-from-foreign control '(:struct foreign-ft-vector))
                nil)
     (error () 1))
   0)
 
-(defcallback cb-outline-cubicto :int ((control1 (:pointer ft-vector))
-                                      (control2 (:pointer ft-vector))
-                                      (to (:pointer ft-vector))
+(defcallback cb-outline-cubicto :int ((control1 (:pointer (:struct foreign-ft-vector)))
+                                      (control2 (:pointer (:struct foreign-ft-vector)))
+                                      (to (:pointer (:struct foreign-ft-vector)))
                                       (user :pointer))
   (declare (ignore user))
   (handler-case
       (funcall *decompose-callback* :cubicto
-               (convert-from-foreign to 'ft-vector)
-               (convert-from-foreign control1 'ft-vector)
-               (convert-from-foreign control2 'ft-vector))
+               (convert-from-foreign to '(:struct foreign-ft-vector))
+               (convert-from-foreign control1 '(:struct foreign-ft-vector))
+               (convert-from-foreign control2 '(:struct foreign-ft-vector)))
     (error () 1))
   0)
 
-(defvar *outline-funcs*
-  (let ((struct (make-collected-foreign 'ft-outline-funcs)))
+(defparameter *outline-funcs*
+  (let ((struct (make-collected-foreign 'ft-outline-funcs
+                                        '(:struct foreign-ft-outline-funcs))))
     (setf (ft-outline-funcs-move-to struct) (callback cb-outline-moveto))
     (setf (ft-outline-funcs-line-to struct) (callback cb-outline-lineto))
     (setf (ft-outline-funcs-conic-to struct) (callback cb-outline-conicto))
@@ -163,7 +164,7 @@ Validate `OUTLINE`."
   "=> BBOX
 Get an exact bounding box for `OUTLINE`.  This may differ from the CBox;
 refer to the FreeType2 API Reference for `FT_Outline_Get_BBox`."
-  (let ((bbox (make-collected-foreign 'ft-bbox)))
+  (let ((bbox (make-collected-foreign 'ft-bbox '(:struct foreign-ft-bbox))))
     (ft-error (ft-outline-get-bbox (fw-ptr outline) (fw-ptr bbox)))
     bbox))
 
@@ -173,7 +174,7 @@ refer to the FreeType2 API Reference for `FT_Outline_Get_BBox`."
   "=> BBOX
 Get the control box for `OUTLINE`.  This may differ from the BBox;
 refer to the FreeType2 API Reference for `FT_Outline_Get_CBox`."
-  (let ((bbox (make-collected-foreign 'ft-bbox)))
+  (let ((bbox (make-collected-foreign 'ft-bbox '(:struct foreign-ft-bbox))))
     (ft-outline-get-cbox (fw-ptr outline) (fw-ptr bbox))
     bbox))
 

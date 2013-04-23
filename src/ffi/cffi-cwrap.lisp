@@ -118,8 +118,11 @@
 
   (defun bitfield-test-name (type slot)
     (intern (concatenate 'string
-                         (string type) "-" (string (car slot))
-                         "-TEST")))
+              (string type) "-" (string (car slot))
+              "-TEST")))
+
+  (defun make-tclass-name (symbol-name)
+    (alexandria:symbolicate 'foreign- symbol-name '-tclass))
 
   (defun make-accessor (type slot handle-name)
     (let ((slot-name (car slot))
@@ -133,11 +136,11 @@
             (defun ,accessor-name (instance)
               (,(make-make-name (cadr slot))
                :ptr (foreign-slot-pointer ,instance-form
-                                          ',foreign-type-name
+                                          '(:struct ,foreign-type-name)
                                           ',slot-name)))
             (defun (setf ,accessor-name) (v instance)
               (setf (foreign-slot-value ,instance-form
-                                        ',foreign-type-name
+                                        '(:struct ,foreign-type-name)
                                         ',slot-name) v))
             (export ',accessor-name)))
         (pointer-to-type
@@ -146,10 +149,10 @@
            `(progn
               (defun ,accessor-name (instance)
                 (let* ((ptr0 (foreign-slot-value ,instance-form
-                                                 ',foreign-type-name
+                                                 '(:struct ,foreign-type-name)
                                                  ',slot-name))
                        (num (foreign-slot-value ,instance-form
-                                                ',foreign-type-name
+                                                '(:struct ,foreign-type-name)
                                                 ',(pointer-array-size slot-type)))
                        (arr (make-array num)))
                   (loop for i from 0 below num
@@ -162,23 +165,24 @@
                (canonical-type (cffi::canonicalize slot-type)))
            `(progn
               (defun ,accessor-name (instance)
-                (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
+                (foreign-slot-value ,instance-form '(:struct ,foreign-type-name) ',slot-name))
               (defun (setf ,accessor-name) (v instance)
-                (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
+                (setf (foreign-slot-value ,instance-form '(:struct ,foreign-type-name) ',slot-name) v))
               (defmacro ,test-name (instance flags)
                 `(let ((instance ,instance))
                    (logtest (foreign-bitfield-value ',',(cffi::name slot-type) ,flags)
-                            (mem-ref ,',instance-form ',',canonical-type ,(foreign-slot-offset ',foreign-type-name ',slot-name)))))
+                            (mem-ref ,',instance-form ',',canonical-type ,(foreign-slot-offset '(:struct ,foreign-type-name)
+                                                                                               ',slot-name)))))
               (export ',accessor-name)
               (export ',test-name))))
         (t
          `(progn
             (defun ,accessor-name (instance)
-              (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name))
+              (foreign-slot-value ,instance-form '(:struct ,foreign-type-name) ',slot-name))
             (defun (setf ,accessor-name) (v instance)
-              (setf (foreign-slot-value ,instance-form ',foreign-type-name ',slot-name) v))
+              (setf (foreign-slot-value ,instance-form '(:struct ,foreign-type-name) ',slot-name) v))
             (export ',accessor-name))))))
-  
+
   (defun make-accessors (type slots handle-name)
     (loop for slot in slots
           collecting (make-accessor type slot handle-name) into accessors
@@ -189,6 +193,7 @@
          (name (if (listp name) (car name) name))
          (symbol-str (symbol-name name)))
     (let ((type-name (make-type-name symbol-str))
+          (tclass-name (make-tclass-name symbol-str))
           (foreign-name (make-foreign-name symbol-str))
           (make-name (make-make-name symbol-str)))
       `(progn
@@ -209,13 +214,13 @@
          ;; Translation
          (defmethod translate-to-foreign (wrapper (type ,type-name))
            (if wrapper (w* wrapper) (null-pointer)))
-         (defmethod translate-from-foreign (ptr (type ,type-name))
+         (defmethod translate-from-foreign (ptr (type ,tclass-name))
            (unless (null-pointer-p ptr)
              (,make-name :ptr ptr)))
 
          (defmethod expand-to-foreign (wrapper (type ,type-name))
            `(if ,wrapper (w* ,wrapper) (null-pointer)))
-         (defmethod expand-from-foreign (ptr (type ,type-name))
+         (defmethod expand-from-foreign (ptr (type ,tclass-name))
            `(unless (null-pointer-p ,ptr)
               (,',make-name :ptr ,ptr)))
 
@@ -248,16 +253,17 @@
          (defmethod expand-from-foreign (ptr (type ,type-name))
            `(unless (null-pointer-p ,ptr)
               (,',make-name :ptr ,ptr)))
-         
+
          (export ',name)
          (export ',type-name)
          (export ',foreign-name)
          (export ',make-name)))))
 
-(defmacro make-wrapper ((handle-var ptr-var foreign-type) init-form free-form)
+(defmacro make-wrapper ((handle-var ptr-var foreign-type
+                         &optional (foreign-name (make-foreign-name (symbol-name foreign-type))))
+                        init-form free-form)
   (let ((err (gensym))
-        (make-name (make-make-name (symbol-name foreign-type)))
-        (foreign-name (make-foreign-name (symbol-name foreign-type))))
+        (make-name (make-make-name (symbol-name foreign-type))))
     `(let* ((,ptr-var (libc-calloc (foreign-type-size ',foreign-name) 1))
             (,handle-var (,make-name :ptr ,ptr-var))
             (,err ,init-form))

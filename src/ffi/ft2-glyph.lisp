@@ -15,7 +15,7 @@
   (p-flags (:pointer ft-uint))
   (p-arg1 (:pointer ft-int))
   (p-arg2 (:pointer ft-int))
-  (p-transform (:pointer ft-matrix)))
+  (p-transform :pointer))
 
 (export 'ft-get-subglyph-info)
 
@@ -35,22 +35,22 @@
 
 (defcfun ("FT_Glyph_Transform" ft-glyph-transform) ft-error
   (glyph ft-glyph)
-  (matrix (:pointer ft-matrix))
-  (delta (:pointer ft-vector)))
+  (matrix :pointer)
+  (delta :pointer))
 
 (export 'ft-glyph-transform)
 
 (defcfun ("FT_Glyph_Get_CBox" ft-glyph-get-cbox) :void
   (glyph ft-glyph)
   (bbox-mode ft-glyph-bbox-mode)
-  (acbox (:pointer ft-bbox)))
+  (acbox :pointer))
 
 (export 'ft-glyph-get-cbox)
 
 (defcfun ("FT_Glyph_To_Bitmap" ft-glyph-to-bitmap) ft-error
   (the-glyph (:pointer ft-glyph))
   (render-mode ft-render-mode)
-  (origin (:pointer ft-vector))
+  (origin :pointer)
   (destroy ft-bool))
 
 (export 'ft-glyph-to-bitmap)

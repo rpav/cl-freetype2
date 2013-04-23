@@ -6,7 +6,7 @@
   (library ft-library)
   (pathname :string)
   (face-index ft-long)
-  (aface (:pointer ft-face)))
+  (aface :pointer))
 
 (export 'ft-new-face)
 
@@ -21,9 +21,9 @@
 
 (defcfun ("FT_Open_Face" ft-open-face) ft-error
   (library ft-library)
-  (args (:pointer ft-open-args))
+  (args :pointer)
   (face-index ft-long)
-  (face (:pointer ft-face)))
+  (face :pointer))
 
 (export 'ft-open-face)
 
@@ -84,8 +84,8 @@
 
 (defcfun ("FT_Set_Transform" ft-set-transform) :void
   (face ft-face)
-  (matrix (:pointer ft-matrix))
-  (delta (:pointer ft-vector)))
+  (matrix :pointer)
+  (delta :pointer))
 
 (export 'ft-set-transform)
 
@@ -95,7 +95,7 @@
   (left-glyph ft-uint)
   (right-glyph ft-uint)
   (kern-mode ft-kerning-mode)
-  (akerning (:pointer ft-vector)))
+  (akerning :pointer))
 
 (export 'ft-get-kerning)
 

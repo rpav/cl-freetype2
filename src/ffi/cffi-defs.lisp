@@ -163,8 +163,8 @@
     ((base :pointer)
      (size :unsigned-long)
      (pos :unsigned-long)
-     (descriptor ft-streamdesc)
-     (pathname ft-streamdesc)
+     (descriptor (:struct foreign-ft-streamdesc))
+     (pathname (:struct foreign-ft-streamdesc))
      (read ft-stream-iofunc)
      (close ft-stream-closefunc)
      (memory ft-memory)
@@ -202,7 +202,7 @@
      (line-to :pointer)
      (conic-to :pointer)
      (cubic-to :pointer)
-     
+
      (shift :int)
      (delta ft-pos)))
 
@@ -247,23 +247,23 @@
 (defcwrap (ft-facerec ft-face)
     ((num-faces ft-long)
      (face-index ft-long)
-     
+
      (face-flags ft-face-flags)
      (style-flags ft-style-flags)
-     
+
      (num-glyphs ft-long)
-     
+
      (family-name :string)
      (style-name :string)
-     
+
      (num-fixed-sizes ft-int)
      (available-sizes (pointer-to :type ft-bitmap-size
                                   :array-size num-fixed-sizes))
      (num-charmaps ft-int)
      (charmaps (pointer-to :type ft-charmap
                            :array-size num-charmaps))
-     (generic ft-generic)
-     (bbox ft-bbox)
+     (generic (:struct foreign-ft-generic))
+     (bbox (:struct foreign-ft-bbox))
      (units-per-em ft-ushort)
      (ascender ft-short)
      (descender ft-short)
@@ -278,8 +278,8 @@
      (driver ft-driver)
      (memory ft-memory)
      (stream ft-stream)
-     (sizes-list ft-listrec)
-     (autohint ft-generic)
+     (sizes-list (:struct foreign-ft-listrec))
+     (autohint (:struct foreign-ft-generic))
      (extensions :pointer)
      (internal ft-face-internal)))
 
@@ -295,8 +295,8 @@
 
 (defcwrap (ft-sizerec ft-size)
     ((face ft-face)
-     (generic ft-generic)
-     (metrics ft-size-metrics)
+     (generic (:struct foreign-ft-generic))
+     (metrics (:struct foreign-ft-size-metrics))
      (internal ft-size-internal)))
 
 (defcwrap (ft-glyphslotrec ft-glyphslot)
@@ -304,16 +304,16 @@
      (face ft-face)
      (next ft-glyphslot)
      (reserved ft-uint)
-     (generic ft-generic)
-     (metrics ft-glyph-metrics)
+     (generic (:struct foreign-ft-generic))
+     (metrics (:struct foreign-ft-glyph-metrics))
      (linear-hori-advance ft-fixed)
      (linear-vert-advance ft-fixed)
-     (advance ft-vector)
+     (advance (:struct foreign-ft-vector))
      (format ft-glyph-format)
-     (bitmap ft-bitmap)
+     (bitmap (:struct foreign-ft-bitmap))
      (bitmap-left ft-int)
      (bitmap-top ft-int)
-     (outline ft-outline)
+     (outline (:struct foreign-ft-outline))
      (num-subglyphs ft-uint)
      (subglyphs ft-subglyph)
      (control-data :pointer)
@@ -354,15 +354,14 @@
     ((library ft-library)
      (clazz :pointer)
      (format ft-glyph-format)
-     (advance ft-vector)))
+     (advance (:struct foreign-ft-vector))))
 
 (defcwrap (ft-bitmapglyphrec ft-bitmapglyph)
-    ((root ft-glyphrec)
+    ((root (:struct foreign-ft-glyphrec))
      (left ft-int)
      (top ft-int)
-     (bitmap ft-bitmap)))
+     (bitmap (:struct foreign-ft-bitmap))))
 
 (defcwrap (ft-outlineglyphrec ft-outlineglyph)
-    ((root ft-glyphrec)
-     (outline ft-outline)))
-
+    ((root (:struct foreign-ft-glyphrec))
+     (outline (:struct foreign-ft-outline))))

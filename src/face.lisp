@@ -14,7 +14,7 @@
 Verify `PATHNAME` is a supported format by calling `FT_Open_Face`
 with a negative face index.  If the face is supported, return the
 number of faces in the file.  Otherwise, NIL."
-  (with-foreign-objects ((c-open-args 'ft-open-args)
+  (with-foreign-objects ((c-open-args '(:struct foreign-ft-open-args))
                          (face 'ft-face))
     (with-foreign-string (cpathname (namestring pathname))
       (let ((args (%make-ft-open-args :ptr c-open-args)))
@@ -132,7 +132,7 @@ an untranslated value is returned as per `FT`_Get_Kerning with the given
 flags."
   (let ((index1 (get-char-index face char1))
         (index2 (get-char-index face char2)))
-    (with-foreign-object (v 'ft-vector)
+    (with-foreign-object (v '(:struct foreign-ft-vector))
       (ft-error (ft-get-kerning face index1 index2 (or mode :default) v))
       (let ((kern (freetype2-types::%ft-vector-x v)))
         (if (or mode (fixed-face-p face))
