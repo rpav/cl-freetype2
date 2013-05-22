@@ -36,11 +36,11 @@
 
 (declaim (inline fw-ptr))
 
-#+(or ccl ecl allegro)
+#+(or ccl allegro)
 (defstruct (foreign-wrapper (:conc-name #:fw-))
   (ptr #.(cffi:null-pointer) :type #.(type-of (cffi:null-pointer))))
 
-#+(or cmucl sbcl clisp)
+#+(or cmucl ecl sbcl clisp)
 (defstruct (foreign-wrapper (:conc-name #:fw-))
   (ptr (cffi:null-pointer) :type #.(type-of (cffi:null-pointer))))
 
