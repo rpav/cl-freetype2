@@ -60,5 +60,10 @@ it."
 
 (export 'extract-freetype)
 
-(setf *library* (make-freetype))
+(defun init-freetype ()
+  "Initialize `*LIBRARY*`. Called when cl-freetype2 loads. If cl-freetype2 is to be used after it has been pre-loaded in an image (e.g. after cl-freetype2 has been loaded and SBCL's `SAVE-LISP-AND-DIE` has created a saved image), `INIT-FREETYPE` must be called again."
+  (setf *library* (make-freetype)))
+
+(init-freetype)
+(export 'init-freetype)
 (export '*library*)
