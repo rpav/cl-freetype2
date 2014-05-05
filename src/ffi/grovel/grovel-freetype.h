@@ -2,7 +2,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include <freetype/ftsystem.h>
-#include <freetype/fttypes.h>
-#include <freetype/ftlist.h>
-#include <freetype/ftimage.h>
+#include <freetype2/ftsystem.h>
+#include <freetype2/fttypes.h>
+#include <freetype2/ftlist.h>
+#include <freetype2/ftimage.h>
