@@ -2,6 +2,8 @@
 
 (cc-flags #+darwin "-I/opt/local/include/freetype2"
           #-darwin "-I/usr/include/freetype2"
+          #-darwin "-I/usr/include/freetype2/freetype2"
+          #-darwin "-I/usr/include/freetype2/freetype"
           #-darwin "-I/usr/include/freetype")
 
 (include "grovel-freetype.h")
