@@ -56,7 +56,8 @@
 
 (defsystem :cl-freetype2-doc
   :description "Documentation generation for cl-freetype2"
-  :depends-on (:cl-freetype2 :cl-who :cl-markdown)
+  :depends-on (#+sbcl :sb-introspect
+               :cl-freetype2 :cl-who :cl-markdown)
 
   :pathname "doc"
   :serial t
