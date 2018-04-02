@@ -2,6 +2,7 @@
 
 (cc-flags #+darwin "-I/opt/local/include/freetype2"
           #+freebsd "-I/usr/local/include/freetype2"
+          #+freebsd "-I/usr/local/include/freetype2/freetype"
           #+(and windows x86-64) "-I/mingw64/include/freetype2"
           #+(and windows x86-64) "-Ic:/msys64/mingw64/include/freetype2"
           #+(and windows x86) "-I/mingw32/include/freetype2"
