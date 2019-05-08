@@ -1,6 +1,7 @@
 (in-package :freetype2-types)
 
 (cc-flags #+darwin "-I/opt/local/include/freetype2"
+          #+darwin "-I/opt/local/include/freetype2/freetype"
           #+freebsd "-I/usr/local/include/freetype2"
           #+(and windows x86-64) "-I/mingw64/include/freetype2"
           #+(and windows x86-64) "-Ic:/msys64/mingw64/include/freetype2"
