@@ -24,6 +24,7 @@
   :monochrome :linear-design
 
   (:no-autohint #x8000)
+  (:target-mono #x20000)
 
   ;; Only valid for ft-get-advance / ft-get-advances
   (:fast-advance-only #x20000000))
