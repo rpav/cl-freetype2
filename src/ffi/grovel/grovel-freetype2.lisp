@@ -15,6 +15,10 @@
           #-darwin "-I/usr/include/freetype2/freetype"
           #-darwin "-I/usr/include/freetype")
 
+;; Use pkg-config (if available) to resolve include paths.
+;; (The hard-coded paths above don't apply on all systems.)
+(pkg-config-cflags "freetype2" :optional t)
+
 (include "grovel-freetype.h")
 
 (constant (+version-major+ "FREETYPE_MAJOR"))
